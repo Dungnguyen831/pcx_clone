@@ -6,7 +6,7 @@
         <a href="#" class="btn-primary">XEM NGAY</a>
     </div>
 </section>
-
+<!-- -->
 <section class="category-strip">
     <div class="container">
         <div class="cat-grid">
