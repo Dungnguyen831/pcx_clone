@@ -11,6 +11,7 @@ class HomeController {
             ['Name' => 'Pulsar X2V2 Mini', 'Price' => 2100000, 'Brand' => 'PULSAR']
         ];
 
+        // Đây là nhánh main của trang chủ
         // 2. Gọi giao diện ra hiển thị
         // Lưu ý: Đường dẫn tính từ file index.php ở ngoài cùng
         require_once 'views/home/index.php';
