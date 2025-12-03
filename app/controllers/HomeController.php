@@ -10,6 +10,7 @@ class HomeController {
             ['Name' => 'Lót chuột Ninjutso', 'Price' => 890000, 'Brand' => 'NINJUTSO'],
             ['Name' => 'Pulsar X2V2 Mini', 'Price' => 2100000, 'Brand' => 'PULSAR']
         ];
+        // dung an com
         // day là huucmt
         // 2. Gọi giao diện ra hiển thị
         // Lưu ý: Đường dẫn tính từ file index.php ở ngoài cùng
