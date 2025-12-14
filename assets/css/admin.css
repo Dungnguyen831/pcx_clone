@@ -1,0 +1,11 @@
+/* assets/css/admin.css */
+
+/* Bố cục Admin: Sidebar trái - Nội dung phải */
+.admin-wrapper { display: flex; min-height: 100vh; }
+.sidebar { width: 250px; background: #34495e; color: #fff; }
+.main-content { flex: 1; padding: 20px; background: #f1f2f6; }
+
+/* Bảng quản lý (CRUD Table) */
+.table-admin { width: 100%; border-collapse: collapse; background: #fff; }
+.table-admin th, .table-admin td { padding: 12px; border-bottom: 1px solid #ddd; }
+.table-admin th { background: var(--primary-color); color: #fff; }

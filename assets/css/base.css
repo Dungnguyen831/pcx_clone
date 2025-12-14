@@ -1,0 +1,25 @@
+/* assets/css/base.css */
+
+/* 1. Biến toàn cục (Sửa màu ở đây là toàn web đổi theo) */
+:root {
+    --primary-color: #2f80ed;  /* Xanh dương chủ đạo */
+    --text-color: #333;
+    --bg-light: #f4f6f8;
+    --danger: #e74c3c;
+    --success: #27ae60;
+}
+
+/* 2. Reset cơ bản */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', sans-serif; line-height: 1.6; color: var(--text-color); }
+a { text-decoration: none; color: inherit; }
+ul { list-style: none; }
+img { max-width: 100%; display: block; }
+
+/* 3. Class tiện ích (Dùng đi dùng lại) */
+.container { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
+.btn { display: inline-block; padding: 10px 20px; border-radius: 5px; font-weight: 600; cursor: pointer; border: none; }
+.btn-primary { background: var(--primary-color); color: #fff; }
+.btn-danger { background: var(--danger); color: #fff; }
+.text-center { text-align: center; }
+.mt-20 { margin-top: 20px; }
