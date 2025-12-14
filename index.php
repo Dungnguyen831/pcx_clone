@@ -1,5 +1,4 @@
 <?php include 'views/layouts/header.php'; ?>
-
 <section class="hero-banner">
     <div class="hero-content">
         <h2>Gamesense x Asuka Radar<br>Kunai Limited Edition</h2>
@@ -8,12 +7,12 @@
 </section>
 <!-- -->
 <section class="category-strip">
-    <div class="container">
+    <div class="container">++
         <div class="cat-grid">
             <div class="cat-item">
                 <div class="cat-icon"><i class="fa-solid fa-computer-mouse"></i></div>
                 <span class="cat-title">Chuột Gaming</span>
-            </div>
+            </div> 
             <div class="cat-item">
                 <div class="cat-icon"><i class="fa-regular fa-keyboard"></i></div>
                 <span class="cat-title">Bàn phím</span>
