@@ -24,6 +24,16 @@ switch ($controller) {
         require_once 'app/controllers/client/CartController.php';
         $obj = new CartController();
         break;
+
+    case 'admin':
+        require_once 'app/controllers/admin/DashboardController.php';
+        $obj = new DashboardController();
+        break;
+
+    case 'auth':
+        require_once 'app/controllers/client/AuthController.php';
+        $obj = new AuthController();
+        break;
         
     default:
         echo "404 - Không tìm thấy trang";
