@@ -37,4 +37,4 @@ if (method_exists($obj, $action)) {
     echo "Hành động không tồn tại";
 }
 ?>
-<!-- khanh check -->
+<!-- khanh nghean -->
