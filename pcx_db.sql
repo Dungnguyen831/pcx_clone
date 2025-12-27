@@ -1,288 +1,157 @@
--- phpMyAdmin SQL Dump
--- version 5.2.1
--- https://www.phpmyadmin.net/
---
--- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th10 29, 2025 lúc 02:01 PM
--- Phiên bản máy phục vụ: 10.4.32-MariaDB
--- Phiên bản PHP: 8.0.30
-
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
-SET time_zone = "+00:00";
-
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
-
---
--- Cơ sở dữ liệu: `pcx_db`
---
+SET time_zone = "+07:00";
 
 -- --------------------------------------------------------
-
---
--- Cấu trúc bảng cho bảng `brand`
---
-
-CREATE TABLE `brand` (
-  `Brand_id` int(11) NOT NULL,
-  `Name` varchar(255) NOT NULL,
-  `Logo_url` varchar(255) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- 1. Bảng USERS (Đã bỏ address)
+-- --------------------------------------------------------
+CREATE TABLE `users` (
+  `user_id` int(11) NOT NULL AUTO_INCREMENT,
+  `full_name` varchar(100) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `phone` varchar(20) DEFAULT NULL,
+  `role` tinyint(1) DEFAULT 0 COMMENT '1: Admin, 0: Khách hàng',
+  `created_at` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`user_id`),
+  UNIQUE KEY `email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
-
---
--- Cấu trúc bảng cho bảng `category`
---
-
-CREATE TABLE `category` (
-  `Category_id` int(11) NOT NULL,
-  `Name` varchar(255) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- 2. Bảng CATEGORIES (Đã bỏ slug)
+-- --------------------------------------------------------
+CREATE TABLE `categories` (
+  `category_id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `description` text DEFAULT NULL,
+  `status` tinyint(1) DEFAULT 1,
+  PRIMARY KEY (`category_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
-
---
--- Cấu trúc bảng cho bảng `customer`
---
-
-CREATE TABLE `customer` (
-  `Customer_id` int(11) NOT NULL,
-  `Full_name` varchar(255) NOT NULL,
-  `Email` varchar(255) NOT NULL,
-  `Password` varchar(255) NOT NULL,
-  `Phone_number` varchar(20) DEFAULT NULL,
-  `Address` varchar(255) DEFAULT NULL,
-  `Role` tinyint(1) DEFAULT 2 COMMENT '1: Admin, 2: Khách hàng',
-  `Created_at` datetime DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- 3. Bảng BRANDS (Đã bỏ slug)
+-- --------------------------------------------------------
+CREATE TABLE `brands` (
+  `brand_id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `logo_url` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`brand_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
+-- 4. Bảng PRODUCTS (Đã bỏ slug, bỏ quantity)
+-- --------------------------------------------------------
+CREATE TABLE `products` (
+  `product_id` int(11) NOT NULL AUTO_INCREMENT,
+  `category_id` int(11) DEFAULT NULL,
+  `brand_id` int(11) DEFAULT NULL,
+  `name` varchar(255) NOT NULL,
+  `price` decimal(15,0) NOT NULL DEFAULT 0,
+  `image` varchar(255) DEFAULT NULL COMMENT 'Ảnh đại diện',
+  `description` text DEFAULT NULL,
+  `technical_specs` text DEFAULT NULL,
+  `status` tinyint(1) DEFAULT 1,
+  `created_at` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`product_id`),
+  KEY `idx_category` (`category_id`),
+  KEY `idx_brand` (`brand_id`),
+  CONSTRAINT `fk_product_brand` FOREIGN KEY (`brand_id`) REFERENCES `brands` (`brand_id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_product_category` FOREIGN KEY (`category_id`) REFERENCES `categories` (`category_id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
---
--- Cấu trúc bảng cho bảng `inventory`
---
-
+-- --------------------------------------------------------
+-- 5. Bảng INVENTORY (MỚI - Quản lý kho riêng biệt)
+-- --------------------------------------------------------
 CREATE TABLE `inventory` (
-  `Inventory_id` int(11) NOT NULL,
-  `Product_id` int(11) NOT NULL,
-  `Quantity` int(11) DEFAULT 0,
-  `Last_updated` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `inventory_id` int(11) NOT NULL AUTO_INCREMENT,
+  `product_id` int(11) NOT NULL,
+  `quantity` int(11) NOT NULL DEFAULT 0,
+  `last_updated` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`inventory_id`),
+  UNIQUE KEY `idx_product_inventory` (`product_id`), -- Mỗi sản phẩm chỉ có 1 dòng tồn kho
+  CONSTRAINT `fk_inventory_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
-
---
--- Cấu trúc bảng cho bảng `order`
---
-
-CREATE TABLE `order` (
-  `Order_id` int(11) NOT NULL,
-  `Customer_id` int(11) DEFAULT NULL,
-  `Order_date` datetime DEFAULT current_timestamp(),
-  `Total_amount` decimal(15,0) NOT NULL,
-  `Order_status` varchar(50) DEFAULT 'Đang xác nhận',
-  `Shipping_address` varchar(255) NOT NULL,
-  `Payment_method` varchar(50) DEFAULT 'COD'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- 6. Bảng PRODUCT_IMAGES (Gallery)
+-- --------------------------------------------------------
+CREATE TABLE `product_images` (
+  `image_id` int(11) NOT NULL AUTO_INCREMENT,
+  `product_id` int(11) NOT NULL,
+  `image_url` varchar(255) NOT NULL,
+  PRIMARY KEY (`image_id`),
+  KEY `idx_product` (`product_id`),
+  CONSTRAINT `fk_gallery_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
+-- 7. Bảng CARTS (Giỏ hàng)
+-- --------------------------------------------------------
+CREATE TABLE `carts` (
+  `cart_id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `product_id` int(11) NOT NULL,
+  `quantity` int(11) NOT NULL DEFAULT 1,
+  `created_at` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`cart_id`),
+  UNIQUE KEY `unique_user_product` (`user_id`,`product_id`),
+  CONSTRAINT `fk_cart_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_cart_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
---
--- Cấu trúc bảng cho bảng `order_details`
---
+-- --------------------------------------------------------
+-- 8. Bảng COUPONS (Mã giảm giá)
+-- --------------------------------------------------------
+CREATE TABLE `coupons` (
+  `coupon_id` int(11) NOT NULL AUTO_INCREMENT,
+  `code` varchar(50) NOT NULL,
+  `discount_type` enum('percent','fixed') NOT NULL DEFAULT 'fixed',
+  `discount_value` decimal(15,0) NOT NULL,
+  `min_order_value` decimal(15,0) DEFAULT 0,
+  `usage_limit` int(11) DEFAULT 100,
+  `used_count` int(11) DEFAULT 0,
+  `start_date` datetime DEFAULT NULL,
+  `end_date` datetime DEFAULT NULL,
+  `status` tinyint(1) DEFAULT 1,
+  PRIMARY KEY (`coupon_id`),
+  UNIQUE KEY `code` (`code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- --------------------------------------------------------
+-- 9. Bảng ORDERS
+-- --------------------------------------------------------
+CREATE TABLE `orders` (
+  `order_id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) DEFAULT NULL,
+  `customer_name` varchar(100) NOT NULL,
+  `customer_phone` varchar(20) NOT NULL,
+  `shipping_address` varchar(255) NOT NULL,
+  `note` text DEFAULT NULL,
+  `total_money` decimal(15,0) NOT NULL,
+  `discount_amount` decimal(15,0) DEFAULT 0,
+  `final_money` decimal(15,0) NOT NULL,
+  `coupon_code` varchar(50) DEFAULT NULL,
+  `payment_method` varchar(50) DEFAULT 'COD',
+  `status` tinyint(4) DEFAULT 0 COMMENT '0: Mới, 1: Xác nhận, 2: Giao, 3: Hoàn thành, 4: Hủy',
+  `created_at` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`order_id`),
+  KEY `idx_user` (`user_id`),
+  CONSTRAINT `fk_order_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+-- 10. Bảng ORDER_DETAILS
+-- --------------------------------------------------------
 CREATE TABLE `order_details` (
-  `Detail_id` int(11) NOT NULL,
-  `Order_id` int(11) NOT NULL,
-  `Product_id` int(11) NOT NULL,
-  `Quantity` int(11) NOT NULL,
-  `Unit_price` decimal(15,0) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
-
---
--- Cấu trúc bảng cho bảng `product`
---
-
-CREATE TABLE `product` (
-  `Product_Id` int(11) NOT NULL,
-  `Category_id` int(11) DEFAULT NULL,
-  `Brand_id` int(11) DEFAULT NULL,
-  `Name` varchar(255) NOT NULL,
-  `Price` decimal(15,0) NOT NULL,
-  `Image` varchar(255) DEFAULT NULL,
-  `Description` text DEFAULT NULL,
-  `Specifications` text DEFAULT NULL,
-  `Status` tinyint(1) DEFAULT 1 COMMENT '1: Còn hàng, 0: Hết hàng'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
-
---
--- Cấu trúc bảng cho bảng `products_image`
---
-
-CREATE TABLE `products_image` (
-  `Products_image_id` int(11) NOT NULL,
-  `Product_id` int(11) NOT NULL,
-  `Image_url` varchar(255) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Chỉ mục cho các bảng đã đổ
---
-
---
--- Chỉ mục cho bảng `brand`
---
-ALTER TABLE `brand`
-  ADD PRIMARY KEY (`Brand_id`);
-
---
--- Chỉ mục cho bảng `category`
---
-ALTER TABLE `category`
-  ADD PRIMARY KEY (`Category_id`);
-
---
--- Chỉ mục cho bảng `customer`
---
-ALTER TABLE `customer`
-  ADD PRIMARY KEY (`Customer_id`),
-  ADD UNIQUE KEY `Email` (`Email`);
-
---
--- Chỉ mục cho bảng `inventory`
---
-ALTER TABLE `inventory`
-  ADD PRIMARY KEY (`Inventory_id`),
-  ADD KEY `Product_id` (`Product_id`);
-
---
--- Chỉ mục cho bảng `order`
---
-ALTER TABLE `order`
-  ADD PRIMARY KEY (`Order_id`),
-  ADD KEY `Customer_id` (`Customer_id`);
-
---
--- Chỉ mục cho bảng `order_details`
---
-ALTER TABLE `order_details`
-  ADD PRIMARY KEY (`Detail_id`),
-  ADD KEY `Order_id` (`Order_id`),
-  ADD KEY `Product_id` (`Product_id`);
-
---
--- Chỉ mục cho bảng `product`
---
-ALTER TABLE `product`
-  ADD PRIMARY KEY (`Product_Id`),
-  ADD KEY `Category_id` (`Category_id`),
-  ADD KEY `Brand_id` (`Brand_id`);
-
---
--- Chỉ mục cho bảng `products_image`
---
-ALTER TABLE `products_image`
-  ADD PRIMARY KEY (`Products_image_id`),
-  ADD KEY `Product_id` (`Product_id`);
-
---
--- AUTO_INCREMENT cho các bảng đã đổ
---
-
---
--- AUTO_INCREMENT cho bảng `brand`
---
-ALTER TABLE `brand`
-  MODIFY `Brand_id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT cho bảng `category`
---
-ALTER TABLE `category`
-  MODIFY `Category_id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT cho bảng `customer`
---
-ALTER TABLE `customer`
-  MODIFY `Customer_id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT cho bảng `inventory`
---
-ALTER TABLE `inventory`
-  MODIFY `Inventory_id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT cho bảng `order`
---
-ALTER TABLE `order`
-  MODIFY `Order_id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT cho bảng `order_details`
---
-ALTER TABLE `order_details`
-  MODIFY `Detail_id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT cho bảng `product`
---
-ALTER TABLE `product`
-  MODIFY `Product_Id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT cho bảng `products_image`
---
-ALTER TABLE `products_image`
-  MODIFY `Products_image_id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- Các ràng buộc cho các bảng đã đổ
---
-
---
--- Các ràng buộc cho bảng `inventory`
---
-ALTER TABLE `inventory`
-  ADD CONSTRAINT `inventory_ibfk_1` FOREIGN KEY (`Product_id`) REFERENCES `product` (`Product_Id`) ON DELETE CASCADE;
-
---
--- Các ràng buộc cho bảng `order`
---
-ALTER TABLE `order`
-  ADD CONSTRAINT `order_ibfk_1` FOREIGN KEY (`Customer_id`) REFERENCES `customer` (`Customer_id`) ON DELETE SET NULL;
-
---
--- Các ràng buộc cho bảng `order_details`
---
-ALTER TABLE `order_details`
-  ADD CONSTRAINT `order_details_ibfk_1` FOREIGN KEY (`Order_id`) REFERENCES `order` (`Order_id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `order_details_ibfk_2` FOREIGN KEY (`Product_id`) REFERENCES `product` (`Product_Id`) ON DELETE NO ACTION;
-
---
--- Các ràng buộc cho bảng `product`
---
-ALTER TABLE `product`
-  ADD CONSTRAINT `product_ibfk_1` FOREIGN KEY (`Category_id`) REFERENCES `category` (`Category_id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `product_ibfk_2` FOREIGN KEY (`Brand_id`) REFERENCES `brand` (`Brand_id`) ON DELETE SET NULL;
-
---
--- Các ràng buộc cho bảng `products_image`
---
-ALTER TABLE `products_image`
-  ADD CONSTRAINT `products_image_ibfk_1` FOREIGN KEY (`Product_id`) REFERENCES `product` (`Product_Id`) ON DELETE CASCADE;
-COMMIT;
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+  `detail_id` int(11) NOT NULL AUTO_INCREMENT,
+  `order_id` int(11) NOT NULL,
+  `product_id` int(11) NOT NULL,
+  `price` decimal(15,0) NOT NULL,
+  `quantity` int(11) NOT NULL,
+  `total_price` decimal(15,0) GENERATED ALWAYS AS (`price` * `quantity`) STORED,
+  PRIMARY KEY (`detail_id`),
+  KEY `idx_order` (`order_id`),
+  KEY `idx_product_detail` (`product_id`),
+  CONSTRAINT `fk_detail_order` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_detail_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON DELETE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
