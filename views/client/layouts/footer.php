@@ -61,6 +61,6 @@
     </script>
     <?php unset($_SESSION['error_msg']); ?>
 <?php endif; ?>
-
 </body>
+
 </html>

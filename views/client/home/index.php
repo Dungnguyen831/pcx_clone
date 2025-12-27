@@ -4,12 +4,11 @@
     <div class="container">
         <img src="assets/images/banner-sample.jpg" alt="Banner" style="width: 100%; border-radius: 10px;">
     </div>
-</section>
+</section> 
 
 <section class="products-section">
     <div class="container">
         <h2 class="section-title">✨ Gear Mới Về</h2>
-        
         <div class="product-grid">
             <?php foreach ($products as $product): ?>
                 <?php 
