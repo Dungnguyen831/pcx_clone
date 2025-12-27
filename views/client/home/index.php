@@ -12,6 +12,7 @@
         <div class="product-grid">
             <?php foreach ($products as $product): ?>
                 <?php 
+                
                     // Logic kiểm tra tồn kho ngay tại View
                     $is_out_of_stock = ($product['quantity'] <= 0);
                 ?>
