@@ -27,7 +27,7 @@ class AuthController {
                 // B. Phân quyền chuyển hướng
                 if ($user['role'] == 1) {
                     // Là Admin -> Vào trang quản trị
-                    header("Location: index.php?controller=dashboard");
+                    header("Location: index.php?controller=admin");
                 } else {
                     // Là Khách -> Về trang chủ
                     header("Location: index.php");
