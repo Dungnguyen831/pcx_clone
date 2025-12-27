@@ -2,31 +2,58 @@
 // app/models/UserModel.php
 require_once 'app/config/database.php';
 
-class UserModel {
+class UserModel
+{
     private $conn;
 
-    public function __construct() {
+    public function __construct()
+    {
         $db = new Database();
         $this->conn = $db->getConnection();
     }
 
-    // Hàm kiểm tra đăng nhập
-    public function checkLogin($email, $password) {
-        // 1. Tìm user theo email
+    // --- Hàm checkLogin cũ của bạn giữ nguyên ---
+    public function checkLogin($email, $password)
+    {
         $sql = "SELECT * FROM users WHERE email = :email";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([':email' => $email]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        // 2. Kiểm tra mật khẩu
-        if ($user) {
-            // Lưu ý: Vì dữ liệu mẫu đang là '123456' (chưa mã hóa) nên ta so sánh trực tiếp.
-            // Trong thực tế, bạn nên dùng: if (password_verify($password, $user['password']))
-            if ($password === $user['password']) {
-                return $user; // Trả về thông tin user nếu đúng
-            }
+        if ($user && $password === $user['password']) {
+            return $user;
         }
-        return false; // Sai email hoặc password
+        return false;
+    }
+
+    // --- THÊM MỚI: Kiểm tra email đã tồn tại chưa ---
+    public function isEmailExists($email)
+    {
+        $sql = "SELECT COUNT(*) FROM users WHERE email = :email";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([':email' => $email]);
+        return $stmt->fetchColumn() > 0;
+    }
+
+    public function isPhoneExists($phone)
+    {
+        $sql = "SELECT COUNT(*) FROM users WHERE phone = :phone";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([':phone' => $phone]);
+        return $stmt->fetchColumn() > 0;
+    }
+
+    // --- THÊM MỚI: Đăng ký user mới ---
+    public function register($full_name, $email, $password, $phone)
+    {
+        $sql = "INSERT INTO users (full_name, email, password, phone, role) 
+                VALUES (:full_name, :email, :password, :phone, 0)";
+        $stmt = $this->conn->prepare($sql);
+        return $stmt->execute([
+            ':full_name' => $full_name,
+            ':email'     => $email,
+            ':password'  => $password, // Đang lưu text thuần để khớp với login của bạn
+            ':phone'     => $phone
+        ]);
     }
 }
-?>
