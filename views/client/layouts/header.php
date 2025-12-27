@@ -31,10 +31,10 @@ if (isset($_SESSION['cart'])) {
         <nav>
             <ul class="main-menu">
                 <li><a href="index.php">Trang chủ</a></li>
-                <li><a href="#">Thương hiệu</a></li>
-                <li><a href="#">Chuột</a></li>
-                <li><a href="#">Bàn phím</a></li>
-                <li><a href="#">Tai nghe</a></li>
+                <li><a href="index.php?controller=order&action=index"> Sản phẩm</a></li>
+                <li><a href="index.php?controller=order&action=index"> Đơn hàng</a></li>
+                <li><a href="index.php?controller=order&action=index"> Giỏ hàng</a></li>
+
             </ul>
         </nav>
 
