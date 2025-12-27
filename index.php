@@ -14,15 +14,15 @@ switch ($controller) {
         require_once 'app/controllers/client/HomeController.php';
         $obj = new HomeController();
         break;
-        
+
     case 'product':
         require_once 'app/controllers/client/ProductController.php';
-        $obj = new ProductController();
+        // $obj = new ProductController();
         break;
-    
+
     case 'cart':
         require_once 'app/controllers/client/CartController.php';
-        $obj = new CartController();
+        // $obj = new CartController();
         break;
 
     case 'admin':
@@ -34,7 +34,7 @@ switch ($controller) {
         require_once 'app/controllers/client/AuthController.php';
         $obj = new AuthController();
         break;
-        
+
     default:
         echo "404 - Không tìm thấy trang";
         exit();
@@ -46,4 +46,3 @@ if (method_exists($obj, $action)) {
 } else {
     echo "Hành động không tồn tại";
 }
-?>
