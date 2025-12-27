@@ -32,7 +32,7 @@ switch ($controller) {
 
     case 'cart':
         require_once 'app/controllers/client/CartController.php';
-        // $obj = new CartController();
+         $obj = new CartController();
         break;
 
     case 'admin':
