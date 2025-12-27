@@ -2,16 +2,19 @@
 // app/models/ProductModel.php
 require_once 'app/config/database.php';
 
-class ProductModel {
+class ProductModel
+{
     private $conn;
 
-    public function __construct() {
+    public function __construct()
+    {
         $db = new Database();
         $this->conn = $db->getConnection();
     }
 
     // Hàm lấy danh sách sản phẩm cho trang chủ (Có kèm Tồn kho và Thương hiệu)
-    public function getHomeProducts($limit = 8) {
+    public function getHomeProducts($limit = 8)
+    {
         // SQL JOIN 3 bảng: products, brands, inventory
         $sql = "SELECT p.*, b.name as brand_name, i.quantity 
                 FROM products p
@@ -22,7 +25,7 @@ class ProductModel {
                 LIMIT :limit";
 
         $stmt = $this->conn->prepare($sql);
-        
+
         // Bind tham số để tránh SQL Injection
         $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
         $stmt->execute();
@@ -30,4 +33,3 @@ class ProductModel {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
-?>

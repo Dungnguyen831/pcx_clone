@@ -263,3 +263,88 @@ footer {
     .header-flex { flex-direction: column; height: auto; padding: 10px; }
     .main-menu { margin: 10px 0; gap: 15px; }
 }
+
+/* ================= AUTH PAGES (Đăng nhập / Đăng ký) ================= */
+.auth-wrapper {
+    background: var(--bg-light); /* Dùng màu nền xám nhạt của base.css */
+    min-height: calc(100vh - 140px); /* Trừ đi chiều cao Header/Footer để luôn full màn hình */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 15px;
+}
+
+.auth-box {
+    background: #fff;
+    width: 100%;
+    max-width: 420px; /* Độ rộng tối đa của form */
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    border: 1px solid #e1e1e1;
+}
+
+.auth-title {
+    text-align: center;
+    font-size: 24px;
+    color: var(--text-color);
+    margin-bottom: 30px;
+    font-weight: 700;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    color: #555;
+}
+
+/* Tái sử dụng style cho Input */
+.form-control {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: 0.3s;
+    font-family: inherit;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(47, 128, 237, 0.1);
+}
+
+/* Link tiện ích (Quên mật khẩu, Đăng ký) */
+.auth-links {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    margin-top: 20px;
+}
+
+.auth-links a {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.auth-links a:hover {
+    text-decoration: underline;
+}
+
+.error-msg {
+    background: #fce4e4;
+    color: var(--danger);
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    text-align: center;
+    border: 1px solid #fcc2c3;
+}

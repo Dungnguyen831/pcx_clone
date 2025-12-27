@@ -1,1 +1,0 @@
-console.log("Website PCX đã tải xong JS!");
