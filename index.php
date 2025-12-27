@@ -18,6 +18,7 @@ switch ($controller) {
     case 'product':
         require_once 'app/controllers/client/ProductController.php';
         $obj = new ProductController();
+      
         break;
     
     case 'cart':
@@ -36,4 +37,6 @@ if (method_exists($obj, $action)) {
 } else {
     echo "Hành động không tồn tại";
 }
+
+
 ?>
