@@ -14,18 +14,37 @@ switch ($controller) {
         require_once 'app/controllers/client/HomeController.php';
         $obj = new HomeController();
         break;
-        
+
     case 'product':
         require_once 'app/controllers/client/ProductController.php';
-        $obj = new ProductController();
-      
+        // $obj = new ProductController();
         break;
-    
+
+    case 'admin-product': // Quản lý sản phẩm dành cho Admin
+        require_once 'app/controllers/admin/AdminProductController.php';
+        $obj = new AdminProductController();
+        break;
+
+    case 'admin-order':
+        require_once 'app/controllers/admin/AdminOrderController.php';
+        $obj = new AdminOrderController();
+        break;
+
     case 'cart':
         require_once 'app/controllers/client/CartController.php';
-        $obj = new CartController();
+        // $obj = new CartController();
         break;
-        
+
+    case 'admin':
+        require_once 'app/controllers/admin/DashboardController.php';
+        $obj = new DashboardController();
+        break;
+
+    case 'auth':
+        require_once 'app/controllers/client/AuthController.php';
+        $obj = new AuthController();
+        break;
+
     default:
         echo "404 - Không tìm thấy trang";
         exit();
@@ -37,6 +56,3 @@ if (method_exists($obj, $action)) {
 } else {
     echo "Hành động không tồn tại";
 }
-
-
-?>
