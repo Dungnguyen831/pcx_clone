@@ -19,17 +19,17 @@
             </div>
             <ul class="sidebar-menu">
                 <li>
-                    <a href="index.php?controller=dashboard" class="<?php echo ($controller == 'dashboard') ? 'active' : ''; ?>">
+                    <a href="index.php?controller=admin" class="<?php echo ($controller == 'admin') ? 'active' : ''; ?>">
                         <i class="fa-solid fa-gauge"></i> Tổng quan
                     </a>
                 </li>
                 <li>
-                    <a href="index.php?controller=product" class="<?php echo ($controller == 'product') ? 'active' : ''; ?>">
+                    <a href="index.php?controller=admin-product&action=index" class="<?php echo ($controller == 'product') ? 'active' : ''; ?>">
                         <i class="fa-solid fa-box"></i> Sản phẩm
                     </a>
                 </li>
                 <li>
-                    <a href="index.php?controller=order" class="<?php echo ($controller == 'order') ? 'active' : ''; ?>">
+                    <a href="index.php?controller=admin-order" class="<?php echo ($controller == 'order') ? 'active' : ''; ?>">
                         <i class="fa-solid fa-file-invoice-dollar"></i> Đơn hàng
                     </a>
                 </li>
