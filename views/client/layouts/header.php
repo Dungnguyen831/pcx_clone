@@ -38,7 +38,7 @@ if (isset($_SESSION['cart'])) {
         </nav>
 
         <div class="header-icons">
-            <a href="#"><i class="fa-solid fa-magnifying-glass"></i></a>
+         
             
             <?php if (isset($_SESSION['user_id'])): ?>
                 <a href="index.php?controller=auth&action=profile"><i class="fa-solid fa-user-check"></i></a>

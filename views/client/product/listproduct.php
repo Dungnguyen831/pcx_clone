@@ -20,7 +20,14 @@
     </aside>
 
     <main class="product-content" style="flex: 3;">
+            <!-- tìm kiếm -->
+            <div class="search-container" style="margin-bottom: 20px;">
+            <input type="text" id="search-input" placeholder="Tìm tên sản phẩm..." 
+                style="padding: 10px; width: 300px; border-radius: 4px; border: 1px solid #ddd;">
+        </div>
+        
         <h2 style="margin-bottom: 20px;">Sản phẩm</h2>
+
         <div class="product-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
             <?php if (empty($products)): ?>
                 <p>Không có sản phẩm nào trong mục này.</p>

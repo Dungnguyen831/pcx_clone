@@ -17,7 +17,7 @@ switch ($controller) {
 
     case 'product':
         require_once 'app/controllers/client/ProductController.php';
-        // $obj = new ProductController();
+         $obj = new ProductController();
         break;
 
     case 'admin-product': // Quản lý sản phẩm dành cho Admin
