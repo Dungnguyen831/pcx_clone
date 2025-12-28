@@ -44,6 +44,7 @@ class UserModel
         $stmt->execute([$id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+    
 
     // --- ĐĂNG KÝ ---
     public function register($full_name, $email, $password, $phone)
@@ -74,12 +75,6 @@ class UserModel
         $stmt = $this->conn->prepare($sql);
         return $stmt->execute([$new_password, $id]);
     }
-}
-    public function getUserById($id)
-    {
-        $sql = "SELECT * FROM users WHERE user_id = ?";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->execute([$id]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
+
+   
 }

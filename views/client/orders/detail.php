@@ -7,14 +7,12 @@
     // Giả sử: 0=Chờ, 1=Đang giao, 2=Hoàn thành, 3=Hủy
     // Bạn hãy chỉnh lại số case khớp với Database của bạn
     switch ($order['status']) {
-        case 0: 
-            $status_class = 'pending'; $status_text = 'Chờ xác nhận'; break;
-        case 1: 
-            $status_class = 'shipping'; $status_text = 'Đang vận chuyển'; break;
-        case 2: 
-            $status_class = 'completed'; $status_text = 'Giao thành công'; break;
-        case 3: 
-            $status_class = 'cancelled'; $status_text = 'Đã hủy'; break;
+        case 0: $status_class = 'pending'; $status_text =  'Chờ xác nhận'; break;
+        case 1: $status_class = 'comfirmed'; $status_text = 'Đã xác nhận'; break;
+        case 2: $status_class = 'shipping'; $status_text= 'Đang vận chuyển'; break;
+        case 3: $status_class = 'completed'; $status_text = 'Giao thành công'; break;
+        case 4: $status_class = 'cancelled'; $status_text = 'Đã hủy'; break;
+        default :$status_text = 'Không xác định'; 
     }
 ?>
 
@@ -41,7 +39,7 @@
                 
                 <?php foreach ($items as $i): ?>
                     <div class="order-item">
-                        <img src="assets/uploads/<?= $i['image'] ?>" class="item-img" alt="<?= $i['name'] ?>">
+                        <img src="assets/uploads/products/<?= $i['image'] ?>" class="item-img" alt="<?= $i['name'] ?>">
                         
                         <div class="item-info">
                             <div class="item-name"><?= $i['name'] ?></div>

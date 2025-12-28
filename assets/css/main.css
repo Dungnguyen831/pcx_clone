@@ -95,24 +95,27 @@ header {
     box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     transform: translateY(-5px);
 }
-
-/* Ảnh sản phẩm */
+/* Khung chứa ảnh sản phẩm */
 .card-image {
-    position: relative;
-    padding: 20px;
-    height: 200px; /* Cố định chiều cao ảnh */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #fff;
+    position: relative !important;
+    padding: 15px !important;
+    height: 200px !important; /* Cố định chiều cao */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: #fff !important;
+    overflow: hidden !important; /* Cắt phần thừa */
 }
 
+/* Định dạng ảnh bên trong */
 .card-image img {
-    max-height: 100%;
-    max-width: 100%;
-    object-fit: contain;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    width: auto !important; /* Không ép giãn ngang */
+    height: auto !important; /* Không ép giãn dọc */
+    object-fit: contain !important; /* Giữ tỷ lệ ảnh */
+    display: block !important;
 }
-
 /* Badge tồn kho */
 .badge-stock {
     position: absolute;

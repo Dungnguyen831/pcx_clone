@@ -27,7 +27,7 @@
             ?>
             <tr class="cart-item" style="border-bottom: 1px solid #eee;">
                 <td style="padding: 15px; display: flex; align-items: center; gap: 15px;">
-                    <img src="assets/uploads/<?php echo $item['image']; ?>" width="60">
+                    <img src="assets/uploads/products/<?php echo $item['image']; ?>" width="60">
                     <span><?php echo $item['name']; ?></span>
                 </td>
                 <td class="product-price" data-price="<?php echo $item['price']; ?>">

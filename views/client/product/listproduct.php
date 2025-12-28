@@ -37,7 +37,7 @@
                     <div class="product-card" style="border: 1px solid #ddd; padding: 15px; border-radius: 8px; text-align: center;">
                         
                         <a href="index.php?controller=product&action=detail&id=<?php echo $product['product_id']; ?>">
-                            <img src="assets/uploads/<?php echo $product['image']; ?>" style="width: 100%; height: 200px; object-fit: contain;">
+                            <img src="assets/uploads/products/<?php echo $product['image']; ?>" style="width: 100%; height: 200px; object-fit: contain;">
                         </a>
 
                         <h4 style="margin: 10px 0;">
