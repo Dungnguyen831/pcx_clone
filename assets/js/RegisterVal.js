@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", function () {
       } else if (!phonePattern.test(phone)) {
         showError(
           "phoneError",
-          "Số điện thoại phải có 10 số và bắt đầu bằng 0"
+          "Số điện thoại không hợp lệ"
         );
       }
 

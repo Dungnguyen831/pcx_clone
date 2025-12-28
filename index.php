@@ -23,7 +23,7 @@ switch ($controller) {
 
     case 'product':
         require_once 'app/controllers/client/ProductController.php';
-        // $obj = new ProductController();
+         $obj = new ProductController();
         break;
 
     case 'admin-product': // Quản lý sản phẩm dành cho Admin
@@ -38,7 +38,7 @@ switch ($controller) {
 
     case 'cart':
         require_once 'app/controllers/client/CartController.php';
-        // $obj = new CartController();
+         $obj = new CartController();
         break;
 
     case 'admin':
