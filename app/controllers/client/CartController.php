@@ -1,5 +1,5 @@
 <?php
-require_once 'app/models/CartModel.php';
+require_once 'app/models/client/CartModel.php';
 
 class CartController {
     private $cartModel;
@@ -64,7 +64,7 @@ public function checkout() {
 
 public function processCheckout() {
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-        require_once 'app/models/OrderModel.php';
+        require_once 'app/models/client/OrderModel.php';
         $orderModel = new OrderModel();
 
         $user_id = $_SESSION['user_id'];
@@ -84,5 +84,26 @@ public function processCheckout() {
             echo "Lỗi khi xử lý đơn hàng.";
         }
     }
+}
+public function updateAjax() {
+    $productId = $_POST['id'] ?? 0;
+    $quantity = $_POST['qty'] ?? 1;
+    $userId = $_SESSION['user_id'] ?? null; // Đảm bảo dùng user_id đồng nhất
+
+    if ($productId > 0 && $userId) {
+        // Cập nhật số lượng mới vào DB
+        $this->cartModel->updateQuantity($userId, $productId, $quantity);
+        
+        // Lấy lại số lượng sản phẩm khác nhau (ví dụ: 3 loại sản phẩm)
+        $uniqueProductCount = $this->cartModel->getCartCount($userId);
+
+        echo json_encode([
+            'success' => true,
+            'newCount' => $uniqueProductCount 
+        ]);
+    } else {
+        echo json_encode(['success' => false]);
+    }
+    exit();
 }
 }
