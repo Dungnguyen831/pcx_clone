@@ -86,7 +86,7 @@
                     <tr style="border-bottom: 1px solid #f1f5f9; transition: background 0.2s;">
                         <td style="padding: 12px 15px; color: #64748b; font-family: monospace;">#<?= $p['product_id'] ?></td>
                         <td style="padding: 12px 15px;">
-                            <img src="assets/uploads/<?= !empty($p['image']) ? $p['image'] : 'default.png' ?>"
+                            <img src="assets/uploads/products/<?= !empty($p['image']) ? $p['image'] : 'default.png' ?>"
                                 alt="Product"
                                 style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px; border: 1px solid #f1f5f9; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
                         </td>

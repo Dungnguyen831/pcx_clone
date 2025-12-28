@@ -113,4 +113,25 @@ class AuthController
         echo "Đây là trang cá nhân của: " . $_SESSION['full_name'];
         echo '<br><a href="index.php?controller=auth&action=logout">Đăng xuất</a>';
     }
+
+    public function profileAdmin()
+    {
+        // 1. Kiểm tra đăng nhập
+        if (!isset($_SESSION['user_id'])) {
+            header("Location: index.php?controller=auth&action=login");
+            exit();
+        }
+
+        // 2. Lấy dữ liệu người dùng từ DB
+        $userModel = new UserModel();
+        $user = $userModel->getUserById($_SESSION['user_id']);
+
+        // 3. Thiết lập thông tin để hiển thị trong layout Admin
+        $page_title = "Hồ sơ cá nhân";
+        $controller = 'admin-profile'; // Để nhận diện trang
+        // Đường dẫn đến file view mới chúng ta sẽ tạo ở bước 3
+        $content_view = 'views/admin/profile/index.php';
+
+        require_once 'views/admin/layouts/page.php';
+    }
 }
