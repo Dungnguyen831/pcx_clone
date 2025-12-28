@@ -4,6 +4,8 @@ session_start(); // Khởi động Session (cho Giỏ hàng)
 // 1. Nhúng file kết nối
 require_once 'app/config/database.php';
 
+$db = new Database();
+$pdo = $db->getConnection();
 // 2. Lấy yêu cầu từ URL (Ví dụ: index.php?controller=product&action=detail)
 $controller = isset($_GET['controller']) ? $_GET['controller'] : 'home';
 $action = isset($_GET['action']) ? $_GET['action'] : 'index';
@@ -44,6 +46,11 @@ switch ($controller) {
         require_once 'app/controllers/client/AuthController.php';
         $obj = new AuthController();
         break;
+    
+    case 'order':
+        require_once 'app/controllers/client/OrderController.php';
+        $obj = new OrderController();
+        break;
 
     default:
         echo "404 - Không tìm thấy trang";
@@ -56,3 +63,5 @@ if (method_exists($obj, $action)) {
 } else {
     echo "Hành động không tồn tại";
 }
+?>
+

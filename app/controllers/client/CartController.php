@@ -50,4 +50,39 @@ class CartController {
         }
         header("Location: index.php?controller=cart&action=index");
     }
+    // Thêm vào trong class CartController
+public function checkout() {
+    $user_id = $_SESSION['user_id'];
+    $cart = $this->cartModel->getCartByUser($user_id);
+    
+    if (empty($cart)) {
+        header("Location: index.php?controller=cart&action=index");
+        exit();
+    }
+    require_once 'views/client/cart/checkout.php';
+}
+
+public function processCheckout() {
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        require_once 'app/models/OrderModel.php';
+        $orderModel = new OrderModel();
+
+        $user_id = $_SESSION['user_id'];
+        $data = [
+            'customer_name'    => $_POST['customer_name'],
+            'customer_phone'   => $_POST['customer_phone'],
+            'shipping_address' => $_POST['shipping_address'],
+            'note'             => $_POST['note'],
+            'total_money'      => $_POST['total_money']
+        ];
+
+        $cart = $this->cartModel->getCartByUser($user_id);
+
+        if ($orderModel->createOrder($user_id, $data, $cart)) {
+            echo "<script>alert('Đặt hàng thành công!'); window.location.href='index.php';</script>";
+        } else {
+            echo "Lỗi khi xử lý đơn hàng.";
+        }
+    }
+}
 }
