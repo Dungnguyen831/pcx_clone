@@ -12,6 +12,7 @@
         <div class="product-grid">
             <?php foreach ($products as $product): ?>
                 <?php 
+                
                     // Logic kiểm tra tồn kho ngay tại View
                     $is_out_of_stock = ($product['quantity'] <= 0);
                 ?>
@@ -19,7 +20,7 @@
                 <div class="product-card">
                     <div class="card-image">
                         <a href="index.php?controller=product&action=detail&id=<?php echo $product['product_id']; ?>">
-                            <img src="assets/uploads/<?php echo $product['image']; ?>" alt="<?php echo $product['name']; ?>">
+                            <img src="assets/uploads/products/<?php echo $product['image']; ?>" alt="<?php echo $product['name']; ?>">
                         </a>
                         
                         <?php if ($is_out_of_stock): ?>

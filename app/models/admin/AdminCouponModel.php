@@ -71,4 +71,18 @@ class AdminCouponModel
         $stmt = $this->conn->prepare("DELETE FROM coupons WHERE coupon_id = ?");
         return $stmt->execute([$id]);
     }
+
+    public function autoExpireCoupons()
+    {
+        $sql = "
+        UPDATE coupons
+        SET status = 0
+        WHERE end_date IS NOT NULL
+          AND end_date < NOW()
+          AND status = 1
+    ";
+
+        $stmt = $this->conn->prepare($sql);
+        return $stmt->execute();
+    }
 }

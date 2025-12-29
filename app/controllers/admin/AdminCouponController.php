@@ -12,6 +12,7 @@ class AdminCouponController
 
     public function index()
     {
+        $this->model->autoExpireCoupons();
         $search = $_GET['search'] ?? null;
         $coupons = $this->model->getAll($search);
         $this->renderView($coupons);
@@ -19,6 +20,7 @@ class AdminCouponController
 
     public function edit()
     {
+        $this->model->autoExpireCoupons();
         $id = $_GET['id'];
         $search = $_GET['search'] ?? null;
         $coupon_edit = $this->model->getById($id);

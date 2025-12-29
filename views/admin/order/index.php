@@ -89,39 +89,40 @@
                         </td>
 
                         <td style="padding: 15px; text-align: center;">
-                            <form action="index.php" method="GET" style="margin: 0;">
-                                <input type="hidden" name="controller" value="admin-order">
-                                <input type="hidden" name="action" value="updateStatus">
-                                <input type="hidden" name="id" value="<?= $o['order_id'] ?>">
-
-                                <select name="status" onchange="this.form.submit()"
-                                    style="padding: 6px 10px; border-radius: 20px; border: 1px solid #dfe5ef; font-size: 11px; font-weight: 600; cursor: pointer; outline: none;
-                                    <?php
-                                    switch ($o['status']) {
-                                        case 0:
-                                            echo 'background: #e3f2fd; color: #2196f3;';
-                                            break; // Mới
-                                        case 1:
-                                            echo 'background: #e8f5e9; color: #2e7d32;';
-                                            break; // Xác nhận
-                                        case 2:
-                                            echo 'background: #fff3e0; color: #ef6c00;';
-                                            break; // Đang giao
-                                        case 3:
-                                            echo 'background: #f1f8e9; color: #4caf50;';
-                                            break; // Hoàn thành
-                                        case 4:
-                                            echo 'background: #ffebee; color: #c62828;';
-                                            break; // Hủy
-                                    }
+    
+                            <?php if ($o['status'] == 3 || $o['status'] == 4): ?>
+                                <span style="padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; display: inline-block;
+                                    <?php 
+                                        if ($o['status'] == 3) echo 'background: #d4edda; color: #155724; border: 1px solid #c3e6cb;'; // Hoàn thành (Xanh lá)
+                                        else echo 'background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;'; // Hủy (Đỏ)
                                     ?>">
-                                    <option value="0" <?= $o['status'] == 0 ? 'selected' : '' ?>>Mới</option>
-                                    <option value="1" <?= $o['status'] == 1 ? 'selected' : '' ?>>Xác nhận (Trừ kho)</option>
-                                    <option value="2" <?= $o['status'] == 2 ? 'selected' : '' ?>>Đang giao</option>
-                                    <option value="3" <?= $o['status'] == 3 ? 'selected' : '' ?>>Hoàn thành</option>
-                                    <option value="4" <?= $o['status'] == 4 ? 'selected' : '' ?>>Hủy đơn (Hoàn kho)</option>
-                                </select>
-                            </form>
+                                    <?= $o['status'] == 3 ? 'ĐÃ HOÀN THÀNH' : 'ĐÃ HỦY' ?>
+                                </span>
+                            
+                            <?php else: ?>
+                                <form action="index.php" method="GET" style="margin: 0;">
+                                    <input type="hidden" name="controller" value="admin-order">
+                                    <input type="hidden" name="action" value="updateStatus">
+                                    <input type="hidden" name="id" value="<?= $o['order_id'] ?>">
+
+                                    <select name="status" onchange="if(confirm('Bạn chắc chắn muốn thay đổi trạng thái?')) { this.form.submit(); } else { this.value = '<?= $o['status'] ?>'; }"
+                                        style="padding: 6px 10px; border-radius: 20px; border: 1px solid #dfe5ef; font-size: 11px; font-weight: 600; cursor: pointer; outline: none;
+                                        <?php
+                                        switch ($o['status']) {
+                                            case 0: echo 'background: #e3f2fd; color: #2196f3; border-color: #bbdefb;'; break; // Mới
+                                            case 1: echo 'background: #fff3cd; color: #856404; border-color: #ffeeba;'; break; // Xác nhận
+                                            case 2: echo 'background: #cce5ff; color: #004085; border-color: #b8daff;'; break; // Đang giao
+                                        }
+                                        ?>">
+                                        
+                                        <option value="0" <?= $o['status'] == 0 ? 'selected' : '' ?>>Mới</option>
+                                        <option value="1" <?= $o['status'] == 1 ? 'selected' : '' ?>>Đã xác nhận</option> <option value="2" <?= $o['status'] == 2 ? 'selected' : '' ?>>Đang giao hàng</option>
+                                        <option value="3" <?= $o['status'] == 3 ? 'selected' : '' ?>>Hoàn thành (Đóng đơn)</option>
+                                        <option value="4" <?= $o['status'] == 4 ? 'selected' : '' ?>>Hủy đơn (Hoàn kho)</option>
+                                    </select>
+                                </form>
+                            <?php endif; ?>
+
                         </td>
 
                         <td style="padding: 15px;">
