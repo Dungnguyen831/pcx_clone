@@ -1,4 +1,9 @@
 <?php
+require_once 'vendor/autoload.php';
+
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+
 class AdminOrderController
 {
     private $orderModel;
@@ -93,4 +98,71 @@ class AdminOrderController
             exit();
         }
     }
+
+    /* ================== XUẤT EXCEL ================== */
+    public function exportExcel()
+    {
+        $orders = $this->orderModel->getAllOrders();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Header
+        $sheet->fromArray([
+            ['ID', 'Khách hàng', 'Điện thoại', 'Tổng tiền', 'Ngày đặt', 'Trạng thái']
+        ]);
+
+        $row = 2;
+        foreach ($orders as $o) {
+            $sheet->fromArray([
+                $o['order_id'],
+                $o['customer_name'],
+                $o['customer_phone'],
+                $o['final_money'],
+                $o['created_at'],
+                (int)$o['status']   
+            ], null, 'A' . $row);
+            $row++;
+        }
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="don_hang.xlsx"');
+        header('Cache-Control: max-age=0');
+
+        $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
+        $writer->save('php://output');
+        exit;
+    }
+
+    /* ================== NHẬP EXCEL ================== */
+    public function importExcel()
+    {
+        if (!isset($_FILES['excel_file']) || $_FILES['excel_file']['error'] != 0) {
+            header("Location: index.php?controller=admin-order&msg=error");
+            exit;
+        }
+
+        $spreadsheet = IOFactory::load($_FILES['excel_file']['tmp_name']);
+        $rows = $spreadsheet->getActiveSheet()->toArray();
+
+        unset($rows[0]); // bỏ header
+
+        foreach ($rows as $row) {
+            if (empty($row[0])) continue;
+
+            $data = [
+                'customer_name'  => $row[1],
+                'customer_phone' => $row[2],
+                'final_money'    => $row[3],
+                'created_at'     => $row[4],
+                'status'         => $row[5]
+            ];
+
+            $this->orderModel->insertOrderFromExcel($data);
+        }
+
+        header("Location: index.php?controller=admin-order&msg=imported");
+        exit;
+    }
+
 }

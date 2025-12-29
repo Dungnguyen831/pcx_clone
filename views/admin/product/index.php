@@ -4,10 +4,48 @@
             <i class="fa-solid fa-boxes-stacked" style="color: var(--primary-color);"></i>
             Quản lý sản phẩm
         </h2>
-        <a href="index.php?controller=admin-product&action=create" class="btn btn-primary" style="display: flex; align-items: center; gap: 8px; padding: 10px 20px;">
-            <i class="fa-solid fa-plus"></i> Thêm sản phẩm mới
-        </a>
+
+        <div style="display: flex; gap: 10px;">
+            <!-- Xuất Excel -->
+            <a href="index.php?controller=admin-product&action=exportExcel"
+            class="btn"
+            style="background:#ecfeff; color:#0891b2; border:1px solid #bae6fd;
+                    display:flex; align-items:center; gap:8px; padding:10px 18px;
+                    border-radius:6px; font-weight:600;">
+                <i class="fa-solid fa-file-export"></i> Xuất Excel
+            </a>
+
+            <!-- Nhập Excel -->
+            <button type="button"
+                onclick="openExcel()"
+                class="btn"
+                style="background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0;
+                        display:flex; align-items:center; gap:8px; padding:10px 18px;
+                        border-radius:6px; font-weight:600;">
+                <i class="fa-solid fa-file-import"></i> Nhập Excel
+            </button>
+
+
+            <!-- Thêm sản phẩm -->
+            <a href="index.php?controller=admin-product&action=create"
+            class="btn btn-primary"
+            style="display:flex; align-items:center; gap:8px; padding:10px 20px;">
+                <i class="fa-solid fa-plus"></i> Thêm sản phẩm mới
+            </a>
+        </div>
     </div>
+
+    <form id="importForm"
+      action="index.php?controller=admin-product&action=importExcel"
+      method="POST"
+      enctype="multipart/form-data"
+      style="display:none">
+
+    <input type="file"
+           id="excelInput"
+           name="excel_file"
+           accept=".xls,.xlsx">
+    </form>
 
     <div style="background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #edf2f7; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
         <form action="index.php" method="GET" style="display: grid; grid-template-columns: 1fr 3fr auto; gap: 15px; align-items: end;">
@@ -135,3 +173,16 @@
         </tbody>
     </table>
 </div>
+
+<!-- JS IMPORT EXCEL -->
+<script>
+function openExcel() {
+    document.getElementById('excelInput').click();
+}
+
+document.getElementById('excelInput').addEventListener('change', function () {
+    if (this.files.length > 0) {
+        document.getElementById('importForm').submit();
+    }
+});
+</script>
