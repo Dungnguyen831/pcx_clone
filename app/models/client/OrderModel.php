@@ -38,8 +38,25 @@ class OrderModel {
     public function createOrder($user_id, $data, $cart_items) {
         try {
             $this->db->beginTransaction();
-
-            // 1. Lưu vào bảng orders
+    
+            // BƯỚC 1: KIỂM TRA TỒN KHO TOÀN BỘ GIỎ HÀNG TRƯỚC
+            foreach ($cart_items as $item) {
+                // Truy vấn số lượng từ bảng inventory
+                $stmt = $this->db->prepare("SELECT quantity FROM inventory WHERE product_id = ? FOR UPDATE");
+                $stmt->execute([$item['product_id']]);
+                $inventory_qty = $stmt->fetchColumn();
+    
+                // So sánh với số lượng trong giỏ hàng
+                if ($item['quantity'] > $inventory_qty) {
+                    $this->db->rollBack();
+                    return [
+                        'error' => true, 
+                        'message' => "Sản phẩm '" . $item['name'] . "' không đủ hàng! (Kho còn: " . ($inventory_qty ?: 0) . ")"
+                    ];
+                }
+            }
+    
+            // BƯỚC 2: TẠO ĐƠN HÀNG (Chỉ chạy 1 lần duy nhất sau khi kiểm tra kho xong)
             $sqlOrder = "INSERT INTO orders (user_id, customer_name, customer_phone, shipping_address, note, total_money, final_money, status, created_at) 
                          VALUES (:uid, :name, :phone, :address, :note, :total, :final, 0, NOW())";
             $stmtOrder = $this->db->prepare($sqlOrder);
@@ -54,37 +71,39 @@ class OrderModel {
             ]);
             
             $order_id = $this->db->lastInsertId();
-
-            // 2. Lưu vào bảng order_details và TRỪ KHO
+    
+            // BƯỚC 3: LƯU CHI TIẾT ĐƠN HÀNG VÀ CẬP NHẬT TRỪ KHO
             foreach ($cart_items as $item) {
                 $total_price = $item['price'] * $item['quantity'];
                 
-                // Lưu chi tiết
+                // Lưu vào order_details
                 $sqlDetail = "INSERT INTO order_details (order_id, product_id, price, quantity, total_price) 
                               VALUES (:oid, :pid, :price, :qty, :tprice)";
-                $stmtDetail = $this->db->prepare($sqlDetail);
-                $stmtDetail->execute([
+                $this->db->prepare($sqlDetail)->execute([
                     ':oid'    => $order_id,
                     ':pid'    => $item['product_id'],
                     ':price'  => $item['price'],
                     ':qty'    => $item['quantity'],
                     ':tprice' => $total_price
                 ]);
-
-                // Trừ kho (Bảng inventory)
+    
+                // Trừ kho trong bảng inventory
                 $sqlInv = "UPDATE inventory SET quantity = quantity - ? WHERE product_id = ?";
                 $this->db->prepare($sqlInv)->execute([$item['quantity'], $item['product_id']]);
             }
-
-            // 3. Xóa giỏ hàng database
+    
+            // BƯỚC 4: XÓA GIỎ HÀNG SAU KHI ĐẶT THÀNH CÔNG
             $sqlClear = "DELETE FROM carts WHERE user_id = ?";
             $this->db->prepare($sqlClear)->execute([$user_id]);
-
+    
             $this->db->commit();
-            return $order_id;
+            return ['error' => false, 'order_id' => $order_id];
+    
         } catch (Exception $e) {
-            $this->db->rollBack();
-            return false;
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+            return ['error' => true, 'message' => "Lỗi hệ thống: " . $e->getMessage()];
         }
     }
 

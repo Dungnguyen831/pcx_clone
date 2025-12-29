@@ -29,12 +29,23 @@ class CartModel {
     }
 
     public function getCartByUser($user_id) {
-        $sql = "SELECT c.*, p.name, p.price, p.image 
-                FROM carts c 
-                JOIN products p ON c.product_id = p.product_id 
-                WHERE c.user_id = :user_id";
+        if ($this->conn === null) {
+            return [];
+        }
+    
+        // Câu lệnh SQL JOIN để lấy stock_quantity từ bảng inventory
+        $sql = "SELECT c.*, p.name, p.image, p.price, i.quantity as stock_quantity 
+                FROM carts c
+                JOIN products p ON c.product_id = p.product_id
+                JOIN inventory i ON c.product_id = i.product_id
+                WHERE c.user_id = ?";
+        
         $stmt = $this->conn->prepare($sql);
-        $stmt->execute([':user_id' => $user_id]);
+        
+        // SỬA LỖI: Thay $stmt.execute thành $stmt->execute
+        $stmt->execute([$user_id]); 
+        
+        // Tương tự, thay $stmt.fetchAll thành $stmt->fetchAll
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 

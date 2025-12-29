@@ -61,13 +61,12 @@ public function checkout() {
     }
     require_once 'views/client/cart/checkout.php';
 }
-
 public function processCheckout() {
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         require_once 'app/models/client/OrderModel.php';
         $orderModel = new OrderModel();
-
         $user_id = $_SESSION['user_id'];
+
         $data = [
             'customer_name'    => $_POST['customer_name'],
             'customer_phone'   => $_POST['customer_phone'],
@@ -76,12 +75,25 @@ public function processCheckout() {
             'total_money'      => $_POST['total_money']
         ];
 
-        $cart = $this->cartModel->getCartByUser($user_id);
+        $cart_items = $this->cartModel->getCartByUser($user_id);
 
-        if ($orderModel->createOrder($user_id, $data, $cart)) {
-            echo "<script>alert('Đặt hàng thành công!'); window.location.href='index.php';</script>";
+        // Gọi hàm và nhận kết quả là một Mảng
+        $result = $orderModel->createOrder($user_id, $data, $cart_items);
+
+        // Kiểm tra logic dựa trên cấu trúc mảng mới
+        if (isset($result['error']) && $result['error'] === false) {
+            // Đặt hàng thành công
+            echo "<script>
+                alert('Đặt hàng thành công!'); 
+                window.location.href='index.php?controller=order&action=index';
+            </script>";
         } else {
-            echo "Lỗi khi xử lý đơn hàng.";
+            // Hiển thị thông báo lỗi cụ thể từ Model (ví dụ: Không đủ hàng)
+            $message = isset($result['message']) ? $result['message'] : 'Lỗi hệ thống khi đặt hàng.';
+            echo "<script>
+                alert('" . $message . "'); 
+                window.history.back();
+            </script>";
         }
     }
 }
