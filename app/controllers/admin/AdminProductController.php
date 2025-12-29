@@ -5,6 +5,8 @@ class AdminProductController
 
     public function __construct()
     {
+        if (session_status() === PHP_SESSION_NONE) session_start();
+
         // Kiểm tra quyền Admin
         if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 1) {
             header("Location: index.php?controller=auth&action=login");
@@ -14,15 +16,10 @@ class AdminProductController
         $this->productModel = new AdminProductModel();
     }
 
-    // app/controllers/admin/AdminProductController.php
-
     public function index()
     {
-        // Lấy từ khóa tìm kiếm từ URL (nếu có)
         $search_id = $_GET['search_id'] ?? null;
         $search_name = $_GET['search_name'] ?? null;
-
-        // Truyền tham số tìm kiếm vào Model
         $products = $this->productModel->getAllProductsAdmin($search_id, $search_name);
 
         $page_title = "Quản lý sản phẩm";
@@ -41,23 +38,15 @@ class AdminProductController
         require_once 'views/admin/layouts/page.php';
     }
 
-    // --- ĐÃ SỬA: GIỮ NGUYÊN TÊN FILE GỐC ---
     public function store()
     {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $image = "default.png";
 
+            // Xử lý Upload Ảnh
             if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
-                $targetDir = "assets/uploads/";
-
-                // Lấy đúng tên file gốc từ máy tính của bạn
-                $image = basename($_FILES["image"]["name"]);
-                $targetFile = $targetDir . $image;
-
-                // Thực hiện di chuyển file vào thư mục upload
-                if (move_uploaded_file($_FILES["image"]["tmp_name"], $targetFile)) {
-                    // Di chuyển thành công
-                } else {
+                $image = $this->handleUpload($_FILES['image']);
+                if (!$image) {
                     echo "Lỗi: Không thể tải ảnh lên thư mục.";
                     exit();
                 }
@@ -69,22 +58,17 @@ class AdminProductController
                 'brand_id'    => $_POST['brand_id'],
                 'price'       => $_POST['price'],
                 'quantity'    => $_POST['quantity'],
-                'image'       => $image, // Lưu đúng tên file gốc vào DB
+                'image'       => $image,
                 'description' => $_POST['description'] ?? '',
                 'status'      => 1
             ];
 
             if ($this->productModel->addProduct($data)) {
                 header("Location: index.php?controller=admin-product&action=index&msg=success");
-            } else {
-                echo "Lỗi: Không thể lưu sản phẩm!";
             }
         }
     }
 
-    // app/controllers/admin/AdminProductController.php
-
-    // Hàm hiển thị Form sửa
     public function edit()
     {
         $id = $_GET['id'] ?? null;
@@ -100,22 +84,27 @@ class AdminProductController
 
         $page_title = "Chỉnh sửa sản phẩm";
         $controller = 'product';
-        $content_view = 'views/admin/product/edit.php'; // File view này ta sẽ tạo ở bước 3
+        $content_view = 'views/admin/product/edit.php';
         require_once 'views/admin/layouts/page.php';
     }
 
-    // Hàm xử lý khi nhấn nút Lưu (Update)
     public function update()
     {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $id = $_POST['id'];
-            $old_image = $_POST['old_image']; // Tên ảnh cũ lưu trong input hidden
-
-            // Logic xử lý ảnh: Nếu không chọn ảnh mới, lấy lại tên ảnh cũ
+            $old_image = $_POST['old_image'];
             $image = $old_image;
+
             if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
-                $image = basename($_FILES["image"]["name"]);
-                move_uploaded_file($_FILES["image"]["tmp_name"], "assets/uploads/products/" . $image);
+                $new_image = $this->handleUpload($_FILES['image']);
+                if ($new_image) {
+                    $image = $new_image;
+                    // Xóa ảnh cũ cho sạch máy (tránh xóa ảnh mặc định)
+                    if ($old_image != 'default.png') {
+                        $oldPath = "assets/uploads/products/" . $old_image;
+                        if (file_exists($oldPath)) unlink($oldPath);
+                    }
+                }
             }
 
             $data = [
@@ -134,28 +123,37 @@ class AdminProductController
             }
         }
     }
+
     public function delete()
     {
         $id = $_GET['id'] ?? null;
-
         if ($id) {
-            // 1. Lấy thông tin sản phẩm để biết tên file ảnh
             $product = $this->productModel->getProductById($id);
-
             if ($product) {
-                // 2. Thực hiện xóa trong Database
                 if ($this->productModel->deleteProduct($id)) {
-
-                    // 3. Xóa file ảnh vật lý trong thư mục assets/uploads/ cho sạch máy
-                    $imagePath = "assets/uploads/" . $product['image'];
-                    if (file_exists($imagePath) && $product['image'] != '') {
-                        unlink($imagePath);
+                    if ($product['image'] != 'default.png') {
+                        $imagePath = "assets/uploads/products/" . $product['image'];
+                        if (file_exists($imagePath)) unlink($imagePath);
                     }
-
                     header("Location: index.php?controller=admin-product&action=index&msg=deleted");
                     exit();
                 }
             }
         }
+    }
+
+    // Hàm phụ trợ xử lý upload dùng chung
+    private function handleUpload($file)
+    {
+        $targetDir = "assets/uploads/products/";
+        if (!is_dir($targetDir)) mkdir($targetDir, 0777, true);
+
+        $fileName = time() . '_' . basename($file["name"]);
+        $targetFile = $targetDir . $fileName;
+
+        if (move_uploaded_file($file["tmp_name"], $targetFile)) {
+            return $fileName;
+        }
+        return false;
     }
 }

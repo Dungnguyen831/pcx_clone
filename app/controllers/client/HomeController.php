@@ -1,6 +1,6 @@
 <?php
 // app/controllers/client/HomeController.php
-require_once 'app/models/ProductModel.php';
+require_once 'app/models/client/ProductModel.php';
 
 class HomeController {
     
@@ -14,7 +14,7 @@ class HomeController {
 
 
     public function listproduct() {
-        require_once 'app/models/ProductModel.php';
+        require_once 'app/models/client/ProductModel.php';
         $productModel = new ProductModel();
         
         // 1. Phải lấy categories để sidebar bên trái không bị lỗi

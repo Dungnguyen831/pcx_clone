@@ -1,10 +1,9 @@
 <?php
 // app/controllers/client/AuthController.php
-require_once 'app/models/UserModel.php';
+require_once 'app/models/client/UserModel.php';
 
 class AuthController
 {
-
     // 1. Hiển thị form đăng nhập
     public function login()
     {
@@ -15,7 +14,7 @@ class AuthController
     public function processLogin()
     {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $email = $_POST['email'];
+            $email = trim($_POST['email']);
             $password = $_POST['password'];
 
             $userModel = new UserModel();
@@ -39,17 +38,13 @@ class AuthController
         }
     }
 
-    // ========================================================
-    // 3. THÊM MỚI: Hiển thị form đăng ký
-    // ========================================================
+    // 3. Hiển thị form đăng ký
     public function register()
     {
         require_once 'views/client/auth/register.php';
     }
 
-    // ========================================================
-    // 4. THÊM MỚI: Xử lý khi bấm nút "Đăng ký"
-    // ========================================================
+    // 4. Xử lý khi bấm nút "Đăng ký"
     public function processRegister()
     {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -60,23 +55,17 @@ class AuthController
 
             $userModel = new UserModel();
 
-            // Kiểm tra trùng Email hoặc Số điện thoại
-            $isEmailUsed = $userModel->isEmailExists($email);
-            // Giả sử bạn có thêm hàm kiểm tra số điện thoại trong UserModel
-            // $isPhoneUsed = $userModel->isPhoneExists($phone); 
-
-            if ($isEmailUsed) {
+            // Kiểm tra trùng Email
+            if ($userModel->isEmailExists($email)) {
                 $error = "Email này đã được sử dụng!";
-                // Lưu dữ liệu đã nhập vào một mảng để truyền lại View
                 $old_data = $_POST;
                 require_once 'views/client/auth/register.php';
                 return;
             }
 
-            $isPhoneUsed = $userModel->isPhoneExists($phone);
-            if ($isPhoneUsed) {
+            // Kiểm tra trùng Số điện thoại
+            if ($userModel->isPhoneExists($phone)) {
                 $error = "Số điện thoại này đã được sử dụng!";
-                // Lưu dữ liệu đã nhập vào một mảng để truyền lại View
                 $old_data = $_POST;
                 require_once 'views/client/auth/register.php';
                 return;
@@ -104,13 +93,62 @@ class AuthController
     }
 
     // 6. Trang cá nhân (Profile)
-    public function profile()
-    {
+    public function profile() {
         if (!isset($_SESSION['user_id'])) {
             header("Location: index.php?controller=auth&action=login");
             exit();
         }
-        echo "Đây là trang cá nhân của: " . $_SESSION['full_name'];
-        echo '<br><a href="index.php?controller=auth&action=logout">Đăng xuất</a>';
+    
+        $userModel = new UserModel();
+        $user_id = $_SESSION['user_id'];
+    
+        // Xử lý khi nhấn nút Cập nhật (Chỉ nhận full_name và phone khớp với DB)
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $full_name = trim($_POST['full_name']);
+            $phone = trim($_POST['phone']);
+    
+            if ($userModel->updateProfile($user_id, $full_name, $phone)) {
+                // Cập nhật lại tên hiển thị trong Session để header đổi ngay lập tức
+                $_SESSION['full_name'] = $full_name; 
+                $message = "Cập nhật thông tin thành công!";
+            } else {
+                $error = "Có lỗi xảy ra, vui lòng thử lại.";
+            }
+        }
+    
+        $user = $userModel->getUserById($user_id);
+        require_once 'views/client/profile/profile.php';
+    }
+
+    // 7. Đổi mật khẩu
+    public function changePassword() {
+        if (!isset($_SESSION['user_id'])) {
+            header("Location: index.php?controller=auth&action=login");
+            exit();
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $user_id = $_SESSION['user_id'];
+            $old_pass = $_POST['old_password'];
+            $new_pass = $_POST['new_password'];
+            $confirm_pass = $_POST['confirm_password'];
+
+            $userModel = new UserModel();
+            $user = $userModel->getUserById($user_id);
+
+            // Kiểm tra mật khẩu cũ (So sánh trực tiếp theo Model của bạn)
+            if ($old_pass !== $user['password']) {
+                $error = "Mật khẩu cũ không chính xác!";
+            } elseif ($new_pass !== $confirm_pass) {
+                $error = "Xác nhận mật khẩu mới không khớp!";
+            } else {
+                if ($userModel->updatePassword($user_id, $new_pass)) {
+                    $success = "Đổi mật khẩu thành công!";
+                } else {
+                    $error = "Lỗi hệ thống, vui lòng thử lại.";
+                }
+            }
+        }
+        require_once 'views/client/profile/change_password.php';
     }
 }

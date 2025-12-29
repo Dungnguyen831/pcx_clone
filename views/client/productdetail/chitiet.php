@@ -4,7 +4,7 @@
     <div class="product-detail-wrapper" style="display: flex; gap: 40px; background: #fff; padding: 20px; border-radius: 10px;">
         
         <div class="product-image" style="flex: 1;">
-            <img src="assets/uploads/<?php echo $product['image']; ?>" alt="<?php echo $product['name']; ?>" style="width: 100%; border-radius: 10px; border: 1px solid #eee;">
+            <img src="assets/uploads/products/<?php echo $product['image']; ?>" alt="<?php echo $product['name']; ?>" style="width: 100%; border-radius: 10px; border: 1px solid #eee;">
         </div>
 
         <div class="product-info" style="flex: 1;">
