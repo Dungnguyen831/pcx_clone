@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="assets/css/base.css">
     <link rel="stylesheet" href="assets/css/admin.css">
+    <link rel="stylesheet" href="assets/css/coupon.css">
 </head>
 
 <body>
@@ -48,6 +49,13 @@
                         </li>
                     </ul>
                 </li>
+
+                <li>
+                    <a href="index.php?controller=admin-coupon" class="<?php echo ($controller == 'coupon') ? 'active' : ''; ?>">
+                        <i class="fa-solid fa-ticket"></i> Mã giảm giá
+                    </a>
+                </li>
+
                 <li>
                     <a href="index.php?controller=admin-order" class="<?php echo ($controller == 'order') ? 'active' : ''; ?>">
                         <i class="fa-solid fa-file-invoice-dollar"></i> Đơn hàng
@@ -96,7 +104,6 @@
 
             <div class="content-body">
                 <?php
-                // Kiểm tra và nhúng file view con vào đây
                 if (isset($content_view) && file_exists($content_view)) {
                     require_once $content_view;
                 } else {
@@ -108,12 +115,9 @@
     </div>
     <script>
         function toggleSubmenu(element) {
-            // Lấy phần tử cha (thẻ li)
             const parentLi = element.parentElement;
-            // Lấy menu con (thẻ ul)
             const submenu = parentLi.querySelector('.submenu');
 
-            // Kiểm tra trạng thái hiển thị
             if (submenu.style.display === "none" || submenu.style.display === "") {
                 submenu.style.display = "block";
                 parentLi.classList.add("open");
@@ -124,15 +128,14 @@
         }
 
         function toggleUserDropdown(event) {
-            event.stopPropagation(); // Ngăn sự kiện lan ra ngoài
+            event.stopPropagation();
             const dropdown = document.getElementById('userDropdown');
             dropdown.classList.toggle('active');
         }
 
-        // Click bất kỳ đâu bên ngoài để đóng menu
         window.addEventListener('click', function() {
             const dropdown = document.getElementById('userDropdown');
-            if (dropdown.classList.contains('active')) {
+            if (dropdown && dropdown.classList.contains('active')) {
                 dropdown.classList.remove('active');
             }
         });
