@@ -39,7 +39,7 @@ else if (isset($_SESSION['cart'])) {
             <ul class="main-menu">
                 <li><a href="index.php">Trang chủ</a></li>
                 <li><a href="index.php?controller=home&action=listproduct">Sản phẩm</a></li>
-                <li><a href="#">Đơn hàng</a></li>
+                <li><a href="index.php?controller=order&action=index">Đơn hàng</a></li>
             </ul>
         </nav>
 

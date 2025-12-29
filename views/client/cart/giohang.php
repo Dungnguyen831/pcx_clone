@@ -58,7 +58,7 @@ foreach ($cart as $item):
                     <h3>Tổng cộng: <span style="color: #e74c3c;"><?php echo number_format($total_bill, 0, ',', '.'); ?>đ</span></h3>
                     <div style="margin-top: 20px;">
                         <a href="index.php?controller=product&action=index" style="padding: 10px 20px; border: 1px solid #333; text-decoration: none; color: #333; margin-right: 10px;">Tiếp tục mua hàng</a>
-                        <a href="index.php?controller=cart&action=checkout" style="padding: 10px 25px; background: #27ae60; color: #fff; text-decoration: none; border-radius: 5px; font-weight: bold;">Tiến hành đặt hàng</a>
+                        <a href="index.php?controller=checkout&action=index" style="padding: 10px 25px; background: #27ae60; color: #fff; text-decoration: none; border-radius: 5px; font-weight: bold;">Tiến hành đặt hàng</a>
                     </div>
                 </div>
             </div>

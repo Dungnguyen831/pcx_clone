@@ -12,7 +12,7 @@ $action = isset($_GET['action']) ? $_GET['action'] : 'index';
 
 // 3. Điều hướng (Routing đơn giản)
 switch ($controller) {
-    case 'checkout':
+    case 'checkout': // Chữ 'checkout' phải viết thường, không dấu cách
         require_once 'app/controllers/client/CheckoutController.php';
         $obj = new CheckoutController();
         break;
