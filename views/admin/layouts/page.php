@@ -33,6 +33,12 @@
                         <i class="fa-solid fa-file-invoice-dollar"></i> Đơn hàng
                     </a>
                 </li>
+
+                <li>
+                    <a href="index.php?controller=user" class="<?php echo ($controller == 'user') ? 'active' : ''; ?>">
+                        <i class="fa-solid fa-users"></i> Khách hàng
+                    </a>
+                </li>
             </ul>
         </aside>
 

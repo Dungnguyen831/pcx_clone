@@ -16,22 +16,20 @@ class ProductController {
         // 3. Hiển thị View chitiet.php
         require_once 'views/client/productdetail/chitiet.php';
     }
+    
     public function index() {
         require_once 'app/models/ProductModel.php';
         $productModel = new ProductModel();
         
-        // Lấy ID loại sản phẩm từ URL (nếu có)
+        // 1. Lấy dữ liệu từ URL
         $cat_id = isset($_GET['cat_id']) ? $_GET['cat_id'] : null;
+        $keyword = isset($_GET['keyword']) ? $_GET['keyword'] : null;
     
-        // Lấy tất cả danh mục để hiện sidebar
+        // 2. Lấy danh sách danh mục (để hiện sidebar)
         $categories = $productModel->getAllCategories(); 
     
-        // Nếu có cat_id thì lọc, không thì hiện tất cả
-        if ($cat_id) {
-            $products = $productModel->getProductsByCategory($cat_id);
-        } else {
-            $products = $productModel->getAllProducts();
-        }
+        // Ta dùng chung 1 hàm getAllProducts và truyền tham số vào
+        $products = $productModel->getAllProducts($cat_id, $keyword);
     
         require_once 'views/client/product/listproduct.php';
     }

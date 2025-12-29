@@ -45,6 +45,11 @@ switch ($controller) {
         $obj = new AuthController();
         break;
 
+    case 'user':
+        require_once 'app/controllers/admin/AdminUserController.php';
+        $obj = new UserController();
+        break;
+
     default:
         echo "404 - Không tìm thấy trang";
         exit();

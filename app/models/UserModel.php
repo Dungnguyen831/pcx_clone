@@ -56,4 +56,34 @@ class UserModel
             ':phone'     => $phone
         ]);
     }
+
+    // --- THÊM MỚI: Lấy thông tin user theo ID ---
+    public function getAllCustomers() {
+        // Có thể Join thêm bảng orders để đếm xem khách này mua bao nhiêu đơn
+        // Nhưng tạm thời SELECT đơn giản trước
+        $sql = "SELECT * FROM users WHERE role = 0 ORDER BY created_at DESC";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getUserById($id) {
+        $sql = "SELECT * FROM users WHERE user_id = :id";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([':id' => $id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function deleteUser($id) {
+        // Lưu ý: Nếu Database có khóa ngoại (Foreign Key) chặt chẽ, 
+        // bạn sẽ không xóa được nếu khách này đã có đơn hàng.
+        try {
+            $sql = "DELETE FROM users WHERE user_id = :id";
+            $stmt = $this->conn->prepare($sql);
+            return $stmt->execute([':id' => $id]);
+        } catch (PDOException $e) {
+            // Trả về false nếu lỗi (ví dụ dính khóa ngoại)
+            return false;
+        }
+    }
 }
