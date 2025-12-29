@@ -19,18 +19,44 @@
             </div>
             <ul class="sidebar-menu">
                 <li>
-                    <a href="index.php?controller=admin" class="<?php echo ($controller == 'admin') ? 'active' : ''; ?>">
+                    <a href="index.php?controller=admin" class="<?php echo ($controller == 'dashboard') ? 'active' : ''; ?>">
                         <i class="fa-solid fa-gauge"></i> Tổng quan
                     </a>
                 </li>
-                <li>
-                    <a href="index.php?controller=admin-product&action=index" class="<?php echo ($controller == 'product') ? 'active' : ''; ?>">
-                        <i class="fa-solid fa-box"></i> Sản phẩm
+                <li class="has-submenu <?php echo ($controller == 'product' || $controller == 'category' || $controller == 'brand') ? 'active' : ''; ?>">
+                    <a href="javascript:void(0)" onclick="toggleSubmenu(this)" class="menu-item">
+                        <i class="fa-solid fa-box"></i>
+                        <span>Sản phẩm</span>
+                        <i class="fa-solid fa-chevron-down arrow-icon" style="margin-left: auto; font-size: 12px;"></i>
                     </a>
+
+                    <ul class="submenu" id="productSubmenu" style="<?php echo ($controller == 'product' || $controller == 'category' || $controller == 'brand') ? 'display: block;' : 'display: none;'; ?>">
+                        <li>
+                            <a href="index.php?controller=admin-product&action=index" class="<?php echo ($controller == 'product') ? 'active' : ''; ?>">
+                                <i class="fa-solid fa-list-ul"></i> Danh sách sản phẩm
+                            </a>
+                        </li>
+                        <li>
+                            <a href="index.php?controller=admin-category" class="<?php echo ($controller == 'category') ? 'active' : ''; ?>">
+                                <i class="fa-solid fa-tags"></i> Danh mục
+                            </a>
+                        </li>
+                        <li>
+                            <a href="index.php?controller=admin-brand" class="<?php echo ($controller == 'brand') ? 'active' : ''; ?>">
+                                <i class="fa-solid fa-copyright"></i> Hãng sản xuất
+                            </a>
+                        </li>
+                    </ul>
                 </li>
                 <li>
                     <a href="index.php?controller=admin-order" class="<?php echo ($controller == 'order') ? 'active' : ''; ?>">
                         <i class="fa-solid fa-file-invoice-dollar"></i> Đơn hàng
+                    </a>
+                </li>
+
+                <li>
+                    <a href="index.php?controller=user" class="<?php echo ($controller == 'user') ? 'active' : ''; ?>">
+                        <i class="fa-solid fa-users"></i> Khách hàng
                     </a>
                 </li>
             </ul>
@@ -41,8 +67,30 @@
                 <div class="admin-title">
                     <?php echo isset($page_title) ? $page_title : 'Dashboard'; ?>
                 </div>
-                <div class="user-info">
-                    Xin chào, <strong>Admin</strong> <i class="fa-solid fa-user-tie"></i>
+                <div class="user-nav">
+                    <div class="user-info-toggle" onclick="toggleUserDropdown(event)">
+                        <div class="user-avatar">
+                            <i class="fa-solid fa-user-tie"></i>
+                        </div>
+                        <div class="user-text">
+                            <span class="user-welcome">Xin chào,</span>
+                            <span class="user-name">Admin <i class="fa-solid fa-caret-down"></i></span>
+                        </div>
+                    </div>
+
+                    <ul class="user-dropdown-menu" id="userDropdown">
+                        <li>
+                            <a href="index.php?controller=admin-profile&action=profileAdmin">
+                                <i class="fa-solid fa-circle-user"></i> Hồ sơ cá nhân
+                            </a>
+                        </li>
+                        <li class="dropdown-divider"></li>
+                        <li>
+                            <a href="index.php?controller=auth&action=logout" class="logout-link">
+                                <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
+                            </a>
+                        </li>
+                    </ul>
                 </div>
             </header>
 
@@ -58,7 +106,37 @@
             </div>
         </div>
     </div>
+    <script>
+        function toggleSubmenu(element) {
+            // Lấy phần tử cha (thẻ li)
+            const parentLi = element.parentElement;
+            // Lấy menu con (thẻ ul)
+            const submenu = parentLi.querySelector('.submenu');
 
+            // Kiểm tra trạng thái hiển thị
+            if (submenu.style.display === "none" || submenu.style.display === "") {
+                submenu.style.display = "block";
+                parentLi.classList.add("open");
+            } else {
+                submenu.style.display = "none";
+                parentLi.classList.remove("open");
+            }
+        }
+
+        function toggleUserDropdown(event) {
+            event.stopPropagation(); // Ngăn sự kiện lan ra ngoài
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.classList.toggle('active');
+        }
+
+        // Click bất kỳ đâu bên ngoài để đóng menu
+        window.addEventListener('click', function() {
+            const dropdown = document.getElementById('userDropdown');
+            if (dropdown.classList.contains('active')) {
+                dropdown.classList.remove('active');
+            }
+        });
+    </script>
 </body>
 
 </html>

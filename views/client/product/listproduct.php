@@ -22,9 +22,20 @@
     <main class="product-content" style="flex: 3;">
             <!-- tìm kiếm -->
             <div class="search-container" style="margin-bottom: 20px;">
-            <input type="text" id="search-input" placeholder="Tìm tên sản phẩm..." 
-                style="padding: 10px; width: 300px; border-radius: 4px; border: 1px solid #ddd;">
-        </div>
+            <form action="index.php" method="GET" style="display: flex; gap: 10px; align-items: center;">
+            <input type="hidden" name="controller" value="product">
+            <input type="hidden" name="action" value="index">
+            
+            <input type="text" name="keyword" 
+                   value="<?php echo isset($_GET['keyword']) ? $_GET['keyword'] : ''; ?>" 
+                   placeholder="Tìm tên sản phẩm..." 
+                   style="padding: 10px; width: 300px; border-radius: 4px; border: 1px solid #ddd; outline: none;">
+            
+            <button type="submit" style="padding: 10px 15px; background: #2563eb; color: #fff; border: none; border-radius: 4px; cursor: pointer;">
+                <i class="fa-solid fa-magnifying-glass"></i> Tìm kiếm
+            </button>
+        </form>
+    </div>
         
         <h2 style="margin-bottom: 20px;">Sản phẩm</h2>
 
@@ -37,7 +48,7 @@
                     <div class="product-card" style="border: 1px solid #ddd; padding: 15px; border-radius: 8px; text-align: center;">
                         
                         <a href="index.php?controller=product&action=detail&id=<?php echo $product['product_id']; ?>">
-                            <img src="assets/uploads/<?php echo $product['image']; ?>" style="width: 100%; height: 200px; object-fit: contain;">
+                            <img src="assets/uploads/products/<?php echo $product['image']; ?>" style="width: 100%; height: 200px; object-fit: contain;">
                         </a>
 
                         <h4 style="margin: 10px 0;">

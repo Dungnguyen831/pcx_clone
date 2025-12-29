@@ -21,6 +21,11 @@ switch ($controller) {
         $obj = new HomeController();
         break;
 
+    case 'admin-profile':
+        require_once 'app/controllers/client/AuthController.php';
+        $obj = new AuthController();
+        break;
+
     case 'product':
         require_once 'app/controllers/client/ProductController.php';
          $obj = new ProductController();
@@ -34,6 +39,16 @@ switch ($controller) {
     case 'admin-order':
         require_once 'app/controllers/admin/AdminOrderController.php';
         $obj = new AdminOrderController();
+        break;
+
+    case 'admin-category':
+        require_once 'app/controllers/admin/AdminCategoryController.php';
+        $obj = new AdminCategoryController();
+        break;
+
+    case 'admin-brand':
+        require_once 'app/controllers/admin/AdminBrandController.php';
+        $obj = new AdminBrandController();
         break;
 
     case 'cart':
@@ -54,6 +69,11 @@ switch ($controller) {
     case 'order':
         require_once 'app/controllers/client/OrderController.php';
         $obj = new OrderController();
+        break;
+
+    case 'user':
+        require_once 'app/controllers/admin/AdminUserController.php';
+        $obj = new UserController();
         break;
 
     default:

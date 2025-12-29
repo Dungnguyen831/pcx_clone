@@ -52,10 +52,12 @@ class CartModel {
    
 
     public function getCartCount($user_id) {
-        $sql = "SELECT SUM(quantity) as total FROM carts WHERE user_id = :user_id";
+        // Sử dụng COUNT để đếm số lượng mã sản phẩm khác nhau
+        $sql = "SELECT COUNT(product_id) as total FROM carts WHERE user_id = :user_id";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([':user_id' => $user_id]);
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $result['total'] ?? 0; // Trả về 0 nếu giỏ hàng trống
+        
+        return $result['total'] ?? 0; 
     }
 }

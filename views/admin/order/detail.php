@@ -34,24 +34,16 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <?php if (!empty($items)): ?>
-                        <?php foreach ($items as $item): ?>
-                            <tr style="border-bottom: 1px solid #f1f5f9;">
-                                <td style="padding: 12px; display: flex; align-items: center; gap: 15px;">
-                                    <img src="assets/uploads/<?= $item['image'] ?>" width="50" height="50" style="object-fit: cover; border-radius: 6px; border: 1px solid #eee;" onerror="this.src='assets/uploads/default.jpg'">
-                                    <span style="font-weight: 600; color: #334155;"><?= htmlspecialchars($item['name']) ?></span>
-                                </td>
-                                <td style="padding: 12px; color: #64748b;"><?= number_format($item['price'], 0, ',', '.') ?>đ</td>
-                                <td style="padding: 12px; text-align: center;">x<?= $item['quantity'] ?></td>
-                                <td style="padding: 12px; text-align: right; font-weight: 700; color: #1e293b;">
-                                    <?= number_format($item['total_price'], 0, ',', '.') ?>đ
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <tr>
-                            <td colspan="4" style="text-align: center; padding: 30px; color: red;">
-                                Lỗi: Không lấy được danh sách sản phẩm. Kiểm tra lại ID đơn hàng!
+                    <?php foreach ($items as $item): ?>
+                        <tr style="border-bottom: 1px solid #f1f5f9;">
+                            <td style="padding: 12px; display: flex; align-items: center; gap: 15px;">
+                                <img src="assets/uploads/products/<?= $item['image'] ?>" width="50" height="50" style="object-fit: cover; border-radius: 6px; border: 1px solid #eee;">
+                                <span style="font-weight: 600; color: #334155;"><?= htmlspecialchars($item['name']) ?></span>
+                            </td>
+                            <td style="padding: 12px; color: #64748b;"><?= number_format($item['price'], 0, ',', '.') ?>đ</td>
+                            <td style="padding: 12px; text-align: center;">x<?= $item['quantity'] ?></td>
+                            <td style="padding: 12px; text-align: right; font-weight: 700; color: #1e293b;">
+                                <?= number_format($item['total_price'], 0, ',', '.') ?>đ
                             </td>
                         </tr>
                     <?php endif; ?>

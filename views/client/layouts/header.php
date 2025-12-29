@@ -4,15 +4,14 @@ $display_count = 0;
 
 // 2. Kiểm tra nếu người dùng đã đăng nhập, ưu tiên lấy từ Database
 if (isset($_SESSION['user_id'])) {
-    require_once 'app/models/CartModel.php';
-    $cartModel = new CartModel();
-    $display_count = $cartModel->getCartCount($_SESSION['user_id']);
+    require_once 'app/models/client/CartModel.php';
+    $headerCartModel = new CartModel(); // Dùng biến riêng để tránh xung đột với Controller
+    $display_count = $headerCartModel->getCartCount($_SESSION['user_id']);
 } 
-// 3. Nếu chưa đăng nhập, có thể đếm tạm từ Session (nếu bạn vẫn dùng cho khách vãng lai)
+// 3. Nếu chưa đăng nhập, đếm từ Session (cho khách vãng lai)
 else if (isset($_SESSION['cart'])) {
-    foreach ($_SESSION['cart'] as $item) {
-        $display_count += $item['quantity'];
-    }
+    // Đếm số lượng sản phẩm không trùng nhau trong Session
+    $display_count = count($_SESSION['cart']); 
 }
 ?>
 <!DOCTYPE html>
@@ -25,7 +24,6 @@ else if (isset($_SESSION['cart'])) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="assets/css/base.css">
     <link rel="stylesheet" href="assets/css/main.css">
-    <link href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-bootstrap-4/bootstrap-4.css" rel="stylesheet">
 </head>
 <body>
 
@@ -50,9 +48,11 @@ else if (isset($_SESSION['cart'])) {
                 <a href="index.php?controller=auth&action=login"><i class="fa-regular fa-user"></i></a>
             <?php endif; ?>
 
-            <a href="index.php?controller=cart&action=index" class="cart-icon">
-                <i class="fa-solid fa-cart-shopping"></i> 
-                <span class="cart-count">(<?php echo $display_count; ?>)</span>
+            <a href="index.php?controller=cart&action=index">
+                <i class="fa-solid fa-cart-shopping"></i>
+                <span id="cart-count" style="color: red; font-weight: bold;">
+                    (<?php echo $display_count; ?>)
+                </span>
             </a>
         </div>
     </div>

@@ -21,10 +21,12 @@
                 <?php
                     $s_badge = 'pending'; $s_text = 'Chờ xử lý';
                     switch ($o['status']) {
-                        case 0: $s_badge = 'pending'; $s_text = 'Chờ xác nhận'; break;
-                        case 1: $s_badge = 'shipping'; $s_text = 'Đang vận chuyển'; break;
-                        case 2: $s_badge = 'completed'; $s_text = 'Giao thành công'; break;
-                        case 3: $s_badge = 'cancelled'; $s_text = 'Đã hủy'; break;
+                        case 0: $s_badge = 'pending'; $s_text =  'Chờ xác nhận'; break;
+                        case 1: $s_badge = 'comfirmed'; $s_text = 'Đã xác nhận'; break;
+                        case 2: $s_badge = 'shipping'; $s_text = 'Đang vận chuyển'; break;
+                        case 3: $s_badge = 'completed'; $s_text = 'Giao thành công'; break;
+                        case 4: $s_badge = 'cancelled'; $s_text = 'Đã hủy'; break;
+                        default : $s_text = 'Không xác định'; 
                     }
                 ?>
 

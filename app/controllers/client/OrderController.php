@@ -1,5 +1,5 @@
 <?php
-require_once 'app/models/OrderModel.php';
+require_once 'app/models/client/OrderModel.php';
 
 class OrderController {
      private $orderModel;
