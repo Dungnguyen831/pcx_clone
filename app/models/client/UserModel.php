@@ -77,4 +77,19 @@ class UserModel
     }
 
    
+    // --- LẤY DANH SÁCH KHÁCH HÀNG ---
+    public function getAllCustomers() {
+        $sql = "SELECT * FROM users WHERE role = 0 ORDER BY user_id DESC";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function isPhoneExists($phone)
+    {
+        $sql = "SELECT COUNT(*) FROM users WHERE phone = :phone";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([':phone' => $phone]);
+        return $stmt->fetchColumn() > 0;
+    }
 }
