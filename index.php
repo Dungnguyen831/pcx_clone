@@ -26,6 +26,11 @@ switch ($controller) {
         $obj = new AuthController();
         break;
 
+    case 'admin-coupon':
+        require_once 'app/controllers/admin/AdminCouponController.php';
+        $obj = new AdminCouponController();
+        break;
+
     case 'product':
         require_once 'app/controllers/client/ProductController.php';
          $obj = new ProductController();
