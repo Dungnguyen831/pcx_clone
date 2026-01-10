@@ -83,8 +83,8 @@ class CartModel {
                 WHERE code = :code 
                 AND status = 1 
                 AND usage_limit > 0 
-                AND (start_date IS NULL OR start_date <= CURDATE()) 
-                AND (end_date IS NULL OR end_date >= CURDATE())";
+                AND (start_date IS NULL OR start_date <= NOW()) 
+                AND (end_date IS NULL OR end_date >= NOW())";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([':code' => $code]);
         $coupon = $stmt->fetch(PDO::FETCH_ASSOC);
