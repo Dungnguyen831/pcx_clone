@@ -32,7 +32,42 @@
             <i class="fa-solid fa-file-invoice-dollar" style="margin-right: 10px; color: var(--primary-color);"></i>
             Quản lý đơn hàng
         </h2>
+
+        <div style="display:flex; gap:12px; margin-bottom:20px;">
+
+        <!-- ===== XUẤT EXCEL ===== -->
+        <a href="index.php?controller=admin-order&action=exportExcel"
+        class="btn"
+        style="background:#2ecc71; color:#fff; padding:12px 18px; border-radius:6px; font-weight:600; text-decoration:none;">
+            <i class="fa-solid fa-file-excel"></i> Xuất Excel
+        </a>
+
+        <!-- ===== NHẬP EXCEL ===== -->
+        <button type="button"
+            onclick="document.getElementById('excelInput').click()"
+            class="btn"
+            style="background:#3498db; color:#fff; padding:12px 18px; border-radius:6px; font-weight:600;">
+            <i class="fa-solid fa-file-import"></i> Nhập Excel
+        </button>
+
+        <!-- FORM ẨN -->
+        <form id="importForm"
+            action="index.php?controller=admin-order&action=importExcel"
+            method="POST"
+            enctype="multipart/form-data"
+            style="display:none;">
+            <input type="file"
+                id="excelInput"
+                name="excel_file"
+                accept=".xlsx,.xls"
+                onchange="document.getElementById('importForm').submit()">
+        </form>
+
     </div>
+
+    </div>
+
+    
 
     <div style="background: #fff; padding: 20px; border-radius: 10px; margin-bottom: 25px; border: 1px solid #e1e8ed; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
         <form action="index.php" method="GET" style="display: grid; grid-template-columns: 150px 1fr auto; gap: 20px; align-items: flex-end;">

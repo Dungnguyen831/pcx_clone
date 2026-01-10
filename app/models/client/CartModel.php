@@ -29,12 +29,23 @@ class CartModel {
     }
 
     public function getCartByUser($user_id) {
-        $sql = "SELECT c.*, p.name, p.price, p.image 
-                FROM carts c 
-                JOIN products p ON c.product_id = p.product_id 
-                WHERE c.user_id = :user_id";
+        if ($this->conn === null) {
+            return [];
+        }
+    
+        // Câu lệnh SQL JOIN để lấy stock_quantity từ bảng inventory
+        $sql = "SELECT c.*, p.name, p.image, p.price, i.quantity as stock_quantity 
+                FROM carts c
+                JOIN products p ON c.product_id = p.product_id
+                JOIN inventory i ON c.product_id = i.product_id
+                WHERE c.user_id = ?";
+        
         $stmt = $this->conn->prepare($sql);
-        $stmt->execute([':user_id' => $user_id]);
+        
+        // SỬA LỖI: Thay $stmt.execute thành $stmt->execute
+        $stmt->execute([$user_id]); 
+        
+        // Tương tự, thay $stmt.fetchAll thành $stmt->fetchAll
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -59,5 +70,53 @@ class CartModel {
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         
         return $result['total'] ?? 0; 
+    }
+
+    // app/models/CartModel.php
+
+    // app/models/client/CartModel.php
+
+    // Thêm tham số $user_id vào hàm
+    public function checkCoupon($code, $totalOrderValue, $user_id = 0) {
+        // 1. Lấy thông tin mã giảm giá (Code cũ giữ nguyên)
+        $sql = "SELECT * FROM coupons 
+                WHERE code = :code 
+                AND status = 1 
+                AND usage_limit > 0 
+                AND (start_date IS NULL OR start_date <= NOW()) 
+                AND (end_date IS NULL OR end_date >= NOW())";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([':code' => $code]);
+        $coupon = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$coupon) {
+            return ['valid' => false, 'msg' => 'Mã không tồn tại hoặc đã hết hạn!'];
+        }
+
+        if ($totalOrderValue < $coupon['min_order_value']) {
+            return ['valid' => false, 'msg' => 'Đơn hàng chưa đủ giá trị tối thiểu!'];
+        }
+
+        // ================================================================
+        // 2. LOGIC MỚI: KIỂM TRA LỊCH SỬ DÙNG CỦA NGƯỜI NÀY
+        // ================================================================
+        if ($user_id > 0) {
+            // Kiểm tra trong bảng orders xem user này đã dùng mã này chưa
+            // VÀ đơn hàng đó KHÔNG bị hủy (Ví dụ status = -1 là hủy, tùy quy định của bạn)
+            $sqlCheckUser = "SELECT COUNT(*) as used FROM orders 
+                            WHERE user_id = :uid 
+                            AND coupon_code = :code 
+                            AND status != -1"; // Giả sử -1 là trạng thái Hủy
+            
+            $stmtCheck = $this->conn->prepare($sqlCheckUser);
+            $stmtCheck->execute([':uid' => $user_id, ':code' => $code]);
+            $history = $stmtCheck->fetch(PDO::FETCH_ASSOC);
+
+            if ($history['used'] > 0) {
+                return ['valid' => false, 'msg' => 'Bạn đã sử dụng mã giảm giá này rồi!'];
+            }
+        }
+
+        return ['valid' => true, 'data' => $coupon];
     }
 }

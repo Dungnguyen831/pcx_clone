@@ -556,3 +556,84 @@ footer {
     .order-card-footer { justify-content: space-between; width: 100%; }
     .btn-sm { flex: 1; text-align: center; }
 }
+
+
+
+/* ================= BANNER SLIDER STYLES ================= */
+.slider-container {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden; /* Ẩn phần ảnh tràn ra ngoài */
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.slider-wrapper {
+    display: flex; /* Xếp các ảnh nằm ngang hàng */
+    transition: transform 0.5s ease-in-out; /* Hiệu ứng trượt mượt mà */
+    width: 100%;
+}
+
+.slide {
+    min-width: 100%; /* Mỗi slide chiếm trọn chiều rộng khung */
+}
+
+.slide img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover; /* Đảm bảo ảnh không bị méo */
+    max-height: 450px; /* Giới hạn chiều cao banner cho đẹp */
+}
+
+/* Nút điều hướng Trái/Phải */
+.slider-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 10;
+    transition: background 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.slider-btn:hover {
+    background-color: var(--primary-color, #0066cc);
+}
+
+.btn-prev { left: 15px; }
+.btn-next { right: 15px; }
+
+/* Dấu chấm chỉ dẫn bên dưới */
+.slider-dots {
+    position: absolute;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.dot.active, .dot:hover {
+    background-color: #fff;
+    transform: scale(1.2);
+}
+
