@@ -29,7 +29,7 @@ switch ($controller) {
 
     case 'product':
         require_once 'app/controllers/client/ProductController.php';
-         $obj = new ProductController();
+        $obj = new ProductController();
         break;
 
     case 'admin-product': // Quản lý sản phẩm dành cho Admin
@@ -54,7 +54,7 @@ switch ($controller) {
 
     case 'cart':
         require_once 'app/controllers/client/CartController.php';
-         $obj = new CartController();
+        $obj = new CartController();
         break;
 
     case 'admin':
@@ -66,10 +66,15 @@ switch ($controller) {
         require_once 'app/controllers/client/AuthController.php';
         $obj = new AuthController();
         break;
-    
+
     case 'order':
         require_once 'app/controllers/client/OrderController.php';
         $obj = new OrderController();
+        break;
+
+    case 'reward':
+        require_once 'app/controllers/client/RewardController.php';
+        $obj = new RewardController();
         break;
 
     case 'user':
@@ -88,5 +93,3 @@ if (method_exists($obj, $action)) {
 } else {
     echo "Hành động không tồn tại";
 }
-?>
-

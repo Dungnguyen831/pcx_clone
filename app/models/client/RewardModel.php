@@ -2,105 +2,137 @@
 class RewardModel
 {
     private $conn;
-
     public function __construct()
     {
         $db = new Database();
         $this->conn = $db->getConnection();
     }
 
-    // --- 1. LẤY DANH SÁCH MÃ TỪ ADMIN ---
+    // --- LOGIC TỰ ĐỘNG QUÉT ĐIỂM TỪ ĐƠN HÀNG HOÀN THÀNH ---
+    //lấy những đơn hàng có trạng thái là hoàn thành nhưng chưa được tính điểm
+    //tính điểm cập nhật vào bảng customers
+    //đánh dấu đơn hàng đã được tính điểm vào bảng orders
+    public function updatePointsFromOrders($user_id)
+    {
+        // Lấy đơn hàng Hoàn thành (3) nhưng chưa tính điểm (0)
+        $sql = "SELECT order_id, final_money, coupon_code FROM orders 
+                WHERE user_id = :uid AND status = 3 AND is_points_calculated = 0";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([':uid' => $user_id]);
+        $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if ($orders) {
+            foreach ($orders as $order) {
+                try {
+                    $this->conn->beginTransaction();
+                    // Tính điểm: 100.000đ = 1 điểm
+                    $pointsToEarn = floor($order['final_money'] / 100000);
+
+                    if ($pointsToEarn > 0) {
+                        // Cộng điểm vào bảng customers
+                        $this->conn->prepare("UPDATE customers SET reward_points = reward_points + ? WHERE user_id = ?")
+                            ->execute([$pointsToEarn, $user_id]);
+                    }
+
+                    // Đánh dấu mã giảm giá trong ví là đã dùng (is_used = 1)
+                    if (!empty($order['coupon_code'])) {
+                        $sqlWallet = "UPDATE user_coupons uc 
+                                      JOIN coupons c ON uc.coupon_id = c.coupon_id 
+                                      SET uc.is_used = 1 
+                                      WHERE uc.user_id = :uid AND c.code = :code";
+                        $this->conn->prepare($sqlWallet)->execute([':uid' => $user_id, ':code' => $order['coupon_code']]);
+                    }
+
+                    // Đánh dấu đơn hàng này đã tính điểm xong
+                    $this->conn->prepare("UPDATE orders SET is_points_calculated = 1 WHERE order_id = ?")
+                        ->execute([$order['order_id']]);
+
+                    $this->conn->commit();
+                } catch (Exception $e) {
+                    $this->conn->rollBack();
+                }
+            }
+        }
+    }
+
     public function getAllCoupons($user_id)
     {
-        // Lấy mã đang kích hoạt, còn hạn, còn lượt dùng chung
-        $sql = "SELECT * FROM coupons 
-                WHERE status = 1 
-                AND (end_date > NOW() OR end_date IS NULL)
-                AND used_count < usage_limit
-                ORDER BY points_cost ASC"; // Sắp xếp: Miễn phí lên đầu
-
+        $sql = "SELECT * FROM coupons WHERE status = 1 AND (end_date > NOW() OR end_date IS NULL) AND used_count < usage_limit ORDER BY points_cost ASC";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute();
         $coupons = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // Duyệt qua từng mã để check xem User này đã từng dùng chưa
         foreach ($coupons as &$c) {
-            $c['is_used_by_me'] = $this->checkUserUsed($user_id, $c['code']);
+            $usedInOrder = $this->checkUserUsed($user_id, $c['code']);
+            $inWallet = $this->checkInWallet($user_id, $c['coupon_id']);
+            $c['is_used_by_me'] = ($usedInOrder || $inWallet);
         }
         return $coupons;
     }
 
-    // --- 2. LẤY LỊCH SỬ ĐÃ DÙNG (Để hiện ở Ví của tôi) ---
-    public function getUsedHistory($user_id)
+    public function getOwnedCoupons($user_id)
     {
-        // Join bảng orders để lấy thông tin mã đã áp dụng thành công
-        $sql = "SELECT c.*, o.created_at as used_at 
-                FROM orders o
-                JOIN coupons c ON o.coupon_code = c.code
-                WHERE o.user_id = :uid 
-                AND o.status != 4 -- 4 là trạng thái Hủy (đơn hủy ko tính)
-                ORDER BY o.created_at DESC";
+        // Lấy mã từ ví (user_coupons)
+        // NHƯNG loại bỏ ngay những mã đã xuất hiện trong bảng đơn hàng (orders) mà không bị hủy
+        $sql = "SELECT c.*, uc.created_at as owned_at 
+            FROM user_coupons uc
+            JOIN coupons c ON uc.coupon_id = c.coupon_id
+            WHERE uc.user_id = :uid 
+            AND uc.is_used = 0 
+            AND c.code NOT IN (
+                SELECT coupon_code FROM orders 
+                WHERE user_id = :uid 
+                AND status != 4 
+                AND coupon_code IS NOT NULL
+            )
+            ORDER BY uc.created_at DESC";
+
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([':uid' => $user_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // --- 3. CHECK XEM USER ĐÃ DÙNG MÃ NÀY CHƯA ---
     private function checkUserUsed($user_id, $code)
     {
-        $sql = "SELECT COUNT(*) FROM orders 
-                WHERE user_id = :uid AND coupon_code = :code AND status != 4";
+        $sql = "SELECT COUNT(*) FROM orders WHERE user_id = :uid AND coupon_code = :code AND status != 4";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([':uid' => $user_id, ':code' => $code]);
         return $stmt->fetchColumn() > 0;
     }
 
-    // --- 4. XỬ LÝ ĐỔI MÃ / LẤY MÃ ---
+    private function checkInWallet($user_id, $coupon_id)
+    {
+        $sql = "SELECT COUNT(*) FROM user_coupons WHERE user_id = :uid AND coupon_id = :cid AND is_used = 0";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([':uid' => $user_id, ':cid' => $coupon_id]);
+        return $stmt->fetchColumn() > 0;
+    }
+
     public function redeem($user_id, $coupon_id)
     {
-        // A. Lấy thông tin mã
-        $stmt = $this->conn->prepare("SELECT * FROM coupons WHERE coupon_id = :id");
-        $stmt->execute([':id' => $coupon_id]);
+        $stmt = $this->conn->prepare("SELECT * FROM coupons WHERE coupon_id = ?");
+        $stmt->execute([$coupon_id]);
         $coupon = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if (!$coupon) return ['status' => false, 'msg' => 'Mã không tồn tại'];
-
-        // B. Check: Đã dùng chưa?
-        if ($this->checkUserUsed($user_id, $coupon['code'])) {
-            return ['status' => false, 'msg' => 'Bạn đã sử dụng mã này rồi!'];
-        }
-
-        // C. Xử lý trừ điểm (Nếu mã tốn điểm)
-        if ($coupon['points_cost'] > 0) {
-            // Lấy điểm hiện tại
-            $stmtPt = $this->conn->prepare("SELECT reward_points FROM customers WHERE user_id = :uid");
-            $stmtPt->execute([':uid' => $user_id]);
-            $currentPoints = $stmtPt->fetchColumn() ?: 0;
-
-            if ($currentPoints < $coupon['points_cost']) {
-                return ['status' => false, 'msg' => 'Bạn không đủ điểm!'];
+        if (!$coupon || $this->checkUserUsed($user_id, $coupon['code']) || $this->checkInWallet($user_id, $coupon_id)) return ['status' => false, 'msg' => 'Mã không khả dụng hoặc đã sở hữu'];
+        try {
+            $this->conn->beginTransaction();
+            if ($coupon['points_cost'] > 0) {
+                $stmtPt = $this->conn->prepare("SELECT reward_points FROM customers WHERE user_id = ? FOR UPDATE");
+                $stmtPt->execute([$user_id]);
+                $curr = $stmtPt->fetchColumn() ?: 0;
+                if ($curr < $coupon['points_cost']) {
+                    $this->conn->rollBack();
+                    return ['status' => false, 'msg' => 'Bạn không đủ điểm!'];
+                }
+                $this->conn->prepare("UPDATE customers SET reward_points = reward_points - ? WHERE user_id = ?")->execute([$coupon['points_cost'], $user_id]);
             }
-
-            // Trừ điểm
-            try {
-                $this->conn->beginTransaction();
-                $newPoints = $currentPoints - $coupon['points_cost'];
-                $this->conn->prepare("UPDATE customers SET reward_points = :pts WHERE user_id = :uid")
-                    ->execute([':pts' => $newPoints, ':uid' => $user_id]);
-                $this->conn->commit();
-            } catch (Exception $e) {
-                $this->conn->rollBack();
-                return ['status' => false, 'msg' => 'Lỗi hệ thống'];
-            }
+            $this->conn->prepare("INSERT INTO user_coupons (user_id, coupon_id, is_used) VALUES (?, ?, 0)")->execute([$user_id, $coupon_id]);
+            $this->conn->commit();
+            return ['status' => true, 'code' => $coupon['code'], 'type' => $coupon['points_cost'] > 0 ? 'redeem' : 'free'];
+        } catch (Exception $e) {
+            $this->conn->rollBack();
+            return ['status' => false, 'msg' => 'Lỗi'];
         }
-
-        // Trả về mã code để Controller hiển thị
-        return [
-            'status' => true,
-            'msg' => 'Thành công!',
-            'code' => $coupon['code'],
-            'type' => $coupon['points_cost'] > 0 ? 'redeem' : 'free'
-        ];
     }
 
     public function getCurrentPoints($user_id)
