@@ -33,7 +33,7 @@
 
                     <ul class="submenu" id="productSubmenu" style="<?php echo ($controller == 'product' || $controller == 'category' || $controller == 'brand') ? 'display: block;' : 'display: none;'; ?>">
                         <li>
-                            <a href="index.php?controller=admin-product&action=index" class="<?php echo ($controller == 'product') ? 'active' : ''; ?>">
+                            <a href="index.php?controller=admin-product" class="<?php echo ($controller == 'product') ? 'active' : ''; ?>">
                                 <i class="fa-solid fa-list-ul"></i> Danh sách sản phẩm
                             </a>
                         </li>
