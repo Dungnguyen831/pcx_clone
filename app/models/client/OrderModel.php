@@ -180,7 +180,7 @@ class OrderModel {
         $stmtGet->execute([':oid' => $order_id]);
         $order = $stmtGet->fetch(PDO::FETCH_ASSOC);
 
-        // 2. Cập nhật trạng thái đơn hàng thành Hủy (Ví dụ -1)
+        // 2. Cập nhật trạng thái đơn hàng thành Hủy 
         $sqlUpdate = "UPDATE orders SET status = 4 WHERE order_id = :oid";
         $this->db->prepare($sqlUpdate)->execute([':oid' => $order_id]);
 

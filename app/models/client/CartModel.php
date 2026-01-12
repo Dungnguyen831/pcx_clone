@@ -72,10 +72,6 @@ class CartModel {
         return $result['total'] ?? 0; 
     }
 
-    // app/models/CartModel.php
-
-    // app/models/client/CartModel.php
-
     // Thêm tham số $user_id vào hàm
     public function checkCoupon($code, $totalOrderValue, $user_id = 0) {
         // 1. Lấy thông tin mã giảm giá (Code cũ giữ nguyên)
@@ -106,7 +102,7 @@ class CartModel {
             $sqlCheckUser = "SELECT COUNT(*) as used FROM orders 
                             WHERE user_id = :uid 
                             AND coupon_code = :code 
-                            AND status != -1"; // Giả sử -1 là trạng thái Hủy
+                            AND status != 4"; // Giả sử -1 là trạng thái Hủy
             
             $stmtCheck = $this->conn->prepare($sqlCheckUser);
             $stmtCheck->execute([':uid' => $user_id, ':code' => $code]);

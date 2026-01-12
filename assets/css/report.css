@@ -1,0 +1,159 @@
+/* assets/css/report.css */
+
+/* --- 1. Layout & Grid (Hệ thống lưới hiện đại) --- */
+.container-fluid {
+    padding: 20px 30px; /* Tăng lề bao quanh cho thoáng */
+    background-color: #f8f9fc; /* Nền xám nhẹ cho dịu mắt */
+    min-height: 100vh;
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 -10px; /* Bù trừ khoảng cách */
+}
+
+/* Logic chia cột thông minh */
+.col-xl-3, .col-md-6 {
+    padding: 0 10px; /* Khoảng cách giữa các cột */
+    margin-bottom: 24px; /* Khoảng cách dòng dưới */
+    box-sizing: border-box;
+}
+
+/* Màn hình lớn (PC): 4 cột */
+@media (min-width: 1200px) {
+    .col-xl-3 {
+        flex: 0 0 25%;
+        max-width: 25%;
+    }
+}
+
+/* Màn hình trung bình (Laptop/Tablet): 2 cột -> Rộng rãi hơn để chứa số lớn */
+@media (min-width: 768px) and (max-width: 1199px) {
+    .col-md-6 {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+}
+
+/* Màn hình nhỏ (Mobile): 1 cột */
+@media (max-width: 767px) {
+    .col-md-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}
+
+/* --- 2. Thẻ Card Thống kê (Dashboard Cards) --- */
+.card {
+    background-color: #fff;
+    border: none; /* Bỏ viền cũ nhìn cho hiện đại */
+    border-radius: 12px; /* Bo góc mềm mại hơn */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* Bóng đổ nhẹ, sang trọng */
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    height: 100%; /* Để các thẻ cao bằng nhau */
+    overflow: hidden; /* Để bo góc hoạt động tốt */
+}
+
+/* Hiệu ứng khi di chuột vào: Nổi lên */
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.card-body {
+    padding: 24px; /* Tăng padding trong thẻ cho thoáng (cũ là 1.25rem) */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* Đường viền màu bên trái to hơn chút */
+.border-left-primary { border-left: 5px solid #4e73df !important; }
+.border-left-success { border-left: 5px solid #1cc88a !important; }
+.border-left-info    { border-left: 5px solid #36b9cc !important; }
+.border-left-warning { border-left: 5px solid #f6c23e !important; }
+
+/* --- 3. Typography (Chữ số) --- */
+.text-xs {
+    font-size: 0.85rem; /* Chữ tiêu đề to hơn xíu */
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    opacity: 0.8;
+}
+
+/* Số tiền to và đậm */
+.h5 {
+    font-size: 1.6rem; /* Tăng kích thước số (cũ là 1.25rem) */
+    font-weight: 800 !important;
+    margin-bottom: 0;
+    line-height: 1.2;
+    word-break: break-word; /* Tự xuống dòng nếu số quá dài (hàng tỷ tỷ) */
+}
+
+/* Chú thích nhỏ bên dưới */
+.text-muted {
+    font-size: 0.85rem;
+    margin-top: 5px;
+    display: block;
+}
+
+/* --- 4. Form lọc ngày --- */
+form.row {
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    margin-bottom: 30px; /* Cách xa phần dưới */
+    align-items: flex-end; /* Căn nút bấm xuống đáy dòng */
+}
+
+.form-control {
+    height: 45px; /* Ô nhập cao hơn dễ bấm */
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.btn-primary {
+    height: 45px;
+    border-radius: 8px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 6px rgba(78, 115, 223, 0.3);
+}
+
+/* --- 5. Biểu đồ --- */
+.card-header {
+    background: transparent;
+    border-bottom: 1px solid #f0f0f0;
+    padding: 20px 24px;
+}
+.card-header h6 {
+    font-size: 1.1rem;
+    color: #333;
+}
+
+form.row {
+    column-gap: 20px; /* Tạo khoảng cách 20px giữa các ô */
+    padding: 25px;    /* Tăng khoảng đệm bên trong khung form */
+}
+
+/* Định nghĩa lại độ rộng và khoảng cách cho các ô trong form */
+form.row .col-md-3 {
+    flex: 0 0 auto;
+    width: 300px; /* Cố định chiều rộng ô ngày cho đẹp */
+    max-width: 100%;
+    padding: 0;   /* Reset padding vì đã dùng column-gap ở trên */
+}
+
+form.row .col-md-2 {
+    flex: 0 0 auto;
+    width: 150px; /* Chiều rộng nút Lọc */
+    padding: 0;
+}
+
+/* Đẩy nút Lọc xuống một chút để thẳng hàng với ô nhập */
+form.row .btn-primary {
+    margin-top: 32px; /* Khoảng cách bằng chiều cao label + margin */
+    width: 100%;
+}
