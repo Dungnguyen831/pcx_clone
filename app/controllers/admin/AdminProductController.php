@@ -1,9 +1,4 @@
 <?php
-// require_once 'vendor/autoload.php';
-
-// use PhpOffice\PhpSpreadsheet\Spreadsheet;
-// use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-// use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class AdminProductController
 {
@@ -148,70 +143,135 @@ class AdminProductController
     }
 
     /* ================== XUẤT EXCEL ================== */
+
     public function exportExcel()
     {
+        // 1. Lấy dữ liệu sản phẩm từ Model
+        // (Hàm này bạn đã có trong model rồi)
         $products = $this->productModel->getAllProductsAdmin(null, null);
+        
+        $filename = "DanhSach_SanPham_" . date('d-m-Y') . ".xls";
 
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
+        // 2. CSS định dạng bảng (Màu xanh, kẻ khung)
+        $style = "
+        <style>
+            body { font-family: 'Times New Roman', serif; }
+            .excel-table { border-collapse: collapse; width: 100%; font-size: 11pt; }
+            .excel-table th { 
+                background-color: #1cc88a; /* Màu xanh lá cho sản phẩm */
+                color: #ffffff; 
+                font-weight: bold; 
+                border: 1px solid #000000; 
+                text-align: center; 
+                height: 40px; 
+                vertical-align: middle;
+            }
+            .excel-table td { 
+                border: 1px solid #000000; 
+                padding: 8px; 
+                vertical-align: middle;
+            }
+            .text-center { text-align: center; }
+            .text-right { text-align: right; }
+            .money-format { mso-number-format:'\#\,\#\#0'; } /* Định dạng số tiền */
+            .title-doc { font-size: 18pt; font-weight: bold; text-align: center; color: #2c3e50; margin-bottom: 20px; }
+        </style>";
 
-        $sheet->fromArray([
-            ['Tên', 'Danh mục ID', 'Thương hiệu ID', 'Giá', 'Số lượng', 'Mô tả', 'Trạng thái']
-        ], null, 'A1');
+        // 3. Thiết lập Header tải xuống
+        header("Content-Type: application/vnd.ms-excel; charset=utf-8");
+        header("Content-Disposition: attachment; filename=\"$filename\"");
+        echo "\xEF\xBB\xBF"; // BOM fix lỗi tiếng Việt
 
-        $row = 2;
-        foreach ($products as $p) {
-            $sheet->fromArray([
-                $p['name'],
-                $p['category_id'],
-                $p['brand_id'],
-                $p['price'],
-                $p['quantity'],
-                $p['description'],
-                $p['status']
-            ], null, 'A' . $row);
-            $row++;
+        // 4. Xuất HTML
+        echo '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">';
+        echo '<head><meta http-equiv="content-type" content="application/vnd.ms-excel; charset=UTF-8">' . $style . '</head>';
+        echo '<body>';
+        
+        echo '<div class="title-doc">DANH SÁCH SẢN PHẨM</div>';
+
+        echo '<table class="excel-table">';
+        echo '<thead>
+                <tr>
+                    <th style="width: 50px;">ID</th>
+                    <th style="width: 300px;">Tên sản phẩm</th>
+                    <th style="width: 150px;">Danh mục</th>
+                    <th style="width: 150px;">Thương hiệu</th>
+                    <th style="width: 120px;">Giá bán</th>
+                    <th style="width: 80px;">Kho</th>
+                    <th style="width: 100px;">Trạng thái</th>
+                </tr>
+            </thead><tbody>';
+
+        if (!empty($products)) {
+            foreach ($products as $p) {
+                // Xử lý trạng thái
+                $statusText = ($p['status'] == 1) ? 'Hiển thị' : 'Ẩn';
+                
+                // Xử lý tên danh mục/thương hiệu (phòng trường hợp null)
+                $catName = isset($p['category_name']) ? $p['category_name'] : $p['category_id'];
+                $brandName = isset($p['brand_name']) ? $p['brand_name'] : $p['brand_id'];
+
+                echo '<tr>
+                    <td class="text-center">' . $p['product_id'] . '</td>
+                    <td>' . htmlspecialchars($p['name']) . '</td>
+                    <td>' . htmlspecialchars($catName) . '</td>
+                    <td>' . htmlspecialchars($brandName) . '</td>
+                    <td class="text-right money-format">' . number_format($p['price'], 0, ',', '.') . '</td>
+                    <td class="text-center">' . $p['quantity'] . '</td>
+                    <td class="text-center">' . $statusText . '</td>
+                </tr>';
+            }
         }
 
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment; filename="products.xlsx"');
-        header('Cache-Control: max-age=0');
-
-        (new Xlsx($spreadsheet))->save('php://output');
-        exit();
+        echo '</tbody></table></body></html>';
+        exit;
     }
 
-    /* ================== NHẬP EXCEL ================== */
+    /* ================== NHẬP EXCEL (Dùng SimpleXLSX) ================== */
     public function importExcel()
     {
-        if (!isset($_FILES['excel_file'])) {
-            header("Location: index.php?controller=admin-product&action=index");
+        // 1. Gọi thư viện
+        require_once 'app/libs/SimpleXLSX.php';
+
+        if (!isset($_FILES['excel_file']) || $_FILES['excel_file']['error'] !== UPLOAD_ERR_OK) {
+            header("Location: index.php?controller=admin-product&action=index&msg=error");
             exit();
         }
 
-        $spreadsheet = IOFactory::load($_FILES['excel_file']['tmp_name']);
-        $rows = $spreadsheet->getActiveSheet()->toArray();
+        // 2. Đọc file Excel tải lên
+        $xlsx = Shuchkin\SimpleXLSX::parse($_FILES['excel_file']['tmp_name']);
 
-        unset($rows[0]); // bỏ header
+        if ($xlsx) {
+            $rows = $xlsx->rows(); // Lấy toàn bộ dòng
+            
+            // Xóa dòng tiêu đề (Dòng đầu tiên)
+            array_shift($rows);
 
-        foreach ($rows as $row) {
-            if (empty($row[0])) continue;
+            foreach ($rows as $row) {
+                // $row[0] là cột A, $row[1] là cột B...
+                
+                // Kiểm tra nếu tên sản phẩm rỗng thì bỏ qua
+                if (empty($row[0])) continue;
 
-            $data = [
-                'name'        => $row[0],
-                'category_id' => $row[1],
-                'brand_id'    => $row[2],
-                'price'       => $row[3],
-                'quantity'    => $row[4],
-                'image'       => 'default.png',
-                'description' => $row[5] ?? '',
-                'status'      => $row[6] ?? 1
-            ];
+                $data = [
+                    'name'        => $row[0],
+                    'category_id' => (int)$row[1],
+                    'brand_id'    => (int)$row[2],
+                    'price'       => (float)$row[3],
+                    'quantity'    => (int)$row[4],
+                    'image'       => 'default.png',
+                    'description' => $row[5] ?? '',
+                    'status'      => isset($row[6]) ? (int)$row[6] : 1
+                ];
 
-            $this->productModel->addProduct($data);
+                $this->productModel->addProduct($data);
+            }
+            
+            header("Location: index.php?controller=admin-product&action=index&msg=imported");
+        } else {
+            // Lỗi đọc file (ví dụ file bị mã hóa hoặc sai định dạng)
+            echo SimpleXLSX::parseError();
         }
-
-        header("Location: index.php?controller=admin-product&action=index&msg=imported");
         exit();
     }
 

@@ -10,6 +10,8 @@
     <link rel="stylesheet" href="assets/css/base.css">
     <link rel="stylesheet" href="assets/css/admin.css">
     <link rel="stylesheet" href="assets/css/coupon.css">
+    <link rel="stylesheet" href="assets/css/report.css">
+    
 </head>
 
 <body>
@@ -24,6 +26,13 @@
                         <i class="fa-solid fa-gauge"></i> Tổng quan
                     </a>
                 </li>
+
+                <li>
+                    <a href="index.php?controller=report" class="<?php echo ($controller == 'report') ? 'active' : ''; ?>">
+                        <i class="fa-solid fa-chart-line"></i> Báo cáo
+                    </a>
+                </li>
+
                 <li class="has-submenu <?php echo ($controller == 'product' || $controller == 'category' || $controller == 'brand') ? 'active' : ''; ?>">
                     <a href="javascript:void(0)" onclick="toggleSubmenu(this)" class="menu-item">
                         <i class="fa-solid fa-box"></i>

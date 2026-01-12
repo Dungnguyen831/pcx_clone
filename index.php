@@ -77,6 +77,11 @@ switch ($controller) {
         $obj = new UserController();
         break;
 
+    case 'report':
+        require_once 'app/controllers/admin/AdminReportController.php';
+        $obj = new AdminReportController();
+        break;
+
     default:
         echo "404 - Không tìm thấy trang";
         exit();

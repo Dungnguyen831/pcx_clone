@@ -44,7 +44,7 @@
     <input type="file"
            id="excelInput"
            name="excel_file"
-           accept=".xls,.xlsx">
+           accept=".xls, .xlsx">
     </form>
 
     <div style="background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #edf2f7; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
