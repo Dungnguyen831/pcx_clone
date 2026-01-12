@@ -9,7 +9,7 @@ class AdminOrderModel
         $this->conn = $db->getConnection();
     }
 
-    public function getAllOrders($search_id = null, $search_name = null)
+    public function getAllOrders($search_id = null, $search_name = null,$status = null)
     {
         $sql = "SELECT * FROM orders WHERE 1=1";
         $params = [];
@@ -20,6 +20,11 @@ class AdminOrderModel
         if ($search_name) {
             $sql .= " AND customer_name LIKE :name";
             $params[':name'] = "%$search_name%";
+        }
+        // Lọc theo trạng thái đơn hàng (nhánh con)
+        if ($status !== null && $status !== '') {
+            $sql .= " AND status = :status";
+            $params[':status'] = $status;
         }
         $sql .= " ORDER BY created_at DESC";
         $stmt = $this->conn->prepare($sql);

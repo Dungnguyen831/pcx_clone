@@ -39,11 +39,7 @@
                 <input type="number" name="price" placeholder="Nhập giá tiền" required
                     style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px;">
             </div>
-            <div>
-                <label style="display: block; font-weight: 600; margin-bottom: 8px;">Số lượng nhập kho <span style="color: var(--danger);">*</span></label>
-                <input type="number" name="quantity" value="1" min="1" required
-                    style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px;">
-            </div>
+            
         </div>
 
         <div style="margin-bottom: 20px;">
