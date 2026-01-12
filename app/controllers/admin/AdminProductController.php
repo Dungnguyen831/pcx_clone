@@ -1,78 +1,35 @@
 <?php
-
-class AdminProductController
-{
+class AdminProductController {
     private $productModel;
 
-    public function __construct()
-    {
+    public function __construct() {
         if (session_status() === PHP_SESSION_NONE) session_start();
-
-        // Check quyền admin
         if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 1) {
             header("Location: index.php?controller=auth&action=login");
             exit();
         }
-
         require_once 'app/models/admin/AdminProductModel.php';
         $this->productModel = new AdminProductModel();
     }
 
-    /* ================== DANH SÁCH ================== */
-    public function index()
-    {
-        $search_id   = $_GET['search_id'] ?? null;
-        $search_name = $_GET['search_name'] ?? null;
-
-        $products = $this->productModel->getAllProductsAdmin($search_id, $search_name);
-
-        $page_title  = "Quản lý sản phẩm";
-        $controller  = 'product';
+    public function index() {
+        $products = $this->productModel->getAllProductsAdmin($_GET['search_id'] ?? null, $_GET['search_name'] ?? null);
+        $page_title = "Quản lý sản phẩm";
         $content_view = 'views/admin/product/index.php';
         require_once 'views/admin/layouts/page.php';
     }
 
-    /* ================== THÊM ================== */
-    public function create()
-    {
+    // --- BỔ SUNG PHƯƠNG THỨC CREATE ---
+    public function create() {
         $categories = $this->productModel->getCategories();
-        $brands     = $this->productModel->getBrands();
-
-        $page_title   = "Thêm mới sản phẩm";
-        $controller   = 'product';
-        $content_view = 'views/admin/product/add.php';
+        $brands = $this->productModel->getBrands();
+        $page_title = "Thêm sản phẩm mới";
+        $content_view = 'views/admin/product/add.php'; // Đảm bảo file này tồn tại
         require_once 'views/admin/layouts/page.php';
     }
 
-    public function store()
-    {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
-            $image = 'default.png';
-            if (!empty($_FILES['image']['name'])) {
-                $image = $this->handleUpload($_FILES['image']) ?? 'default.png';
-            }
-
-            $data = [
-                'name'        => $_POST['name'],
-                'category_id' => $_POST['category_id'],
-                'brand_id'    => $_POST['brand_id'],
-                'price'       => $_POST['price'],
-                'quantity'    => $_POST['quantity'],
-                'image'       => $image,
-                'description' => $_POST['description'] ?? '',
-                'status'      => 1
-            ];
-
-            $this->productModel->addProduct($data);
-            header("Location: index.php?controller=admin-product&action=index&msg=success");
-            exit();
-        }
-    }
-
-    /* ================== SỬA ================== */
-    public function edit()
-    {
+    // --- BỔ SUNG PHƯƠNG THỨC EDIT ---
+    public function edit() {
         $id = $_GET['id'] ?? null;
         $product = $this->productModel->getProductById($id);
 
@@ -90,57 +47,6 @@ class AdminProductController
         require_once 'views/admin/layouts/page.php';
     }
 
-    public function update()
-    {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
-            $image = $_POST['old_image'];
-
-            if (!empty($_FILES['image']['name'])) {
-                $newImage = $this->handleUpload($_FILES['image']);
-                if ($newImage) {
-                    if ($image !== 'default.png') {
-                        $oldPath = "assets/uploads/products/$image";
-                        if (file_exists($oldPath)) unlink($oldPath);
-                    }
-                    $image = $newImage;
-                }
-            }
-
-            $data = [
-                'id'          => $_POST['id'],
-                'name'        => $_POST['name'],
-                'category_id' => $_POST['category_id'],
-                'brand_id'    => $_POST['brand_id'],
-                'price'       => $_POST['price'],
-                'quantity'    => $_POST['quantity'],
-                'image'       => $image,
-                'description' => $_POST['description']
-            ];
-
-            $this->productModel->updateProduct($data);
-            header("Location: index.php?controller=admin-product&action=index&msg=updated");
-            exit();
-        }
-    }
-
-    /* ================== XOÁ ================== */
-    public function delete()
-    {
-        $id = $_GET['id'] ?? null;
-        if ($id) {
-            $product = $this->productModel->getProductById($id);
-            if ($product) {
-                $this->productModel->deleteProduct($id);
-                if ($product['image'] !== 'default.png') {
-                    $path = "assets/uploads/products/" . $product['image'];
-                    if (file_exists($path)) unlink($path);
-                }
-            }
-        }
-        header("Location: index.php?controller=admin-product&action=index&msg=deleted");
-        exit();
-    }
 
     /* ================== XUẤT EXCEL ================== */
 
@@ -230,60 +136,145 @@ class AdminProductController
     /* ================== NHẬP EXCEL (Dùng SimpleXLSX) ================== */
     public function importExcel()
     {
-        // 1. Gọi thư viện
+        // 1. Gọi file thư viện bạn vừa tạo ở Bước 1
         require_once 'app/libs/SimpleXLSX.php';
 
+        // 2. Kiểm tra xem người dùng có gửi file lên không
         if (!isset($_FILES['excel_file']) || $_FILES['excel_file']['error'] !== UPLOAD_ERR_OK) {
+            // Nếu lỗi hoặc không có file -> Quay về trang chủ báo lỗi
             header("Location: index.php?controller=admin-product&action=index&msg=error");
             exit();
         }
 
-        // 2. Đọc file Excel tải lên
+        // 3. Bắt đầu đọc file Excel
+        // ::parse() là hàm của thư viện giúp đọc file từ bộ nhớ tạm
         $xlsx = Shuchkin\SimpleXLSX::parse($_FILES['excel_file']['tmp_name']);
 
         if ($xlsx) {
-            $rows = $xlsx->rows(); // Lấy toàn bộ dòng
+            $rows = $xlsx->rows(); // Lấy tất cả các dòng trong file Excel
             
-            // Xóa dòng tiêu đề (Dòng đầu tiên)
-            array_shift($rows);
+            // Xóa dòng đầu tiên (vì nó là dòng tiêu đề: Tên, Giá, Số lượng...)
+            array_shift($rows); 
+
+            $count = 0; // Biến đếm số sản phẩm thêm thành công
 
             foreach ($rows as $row) {
-                // $row[0] là cột A, $row[1] là cột B...
+                // $row[0] là Cột A, $row[1] là Cột B...
                 
-                // Kiểm tra nếu tên sản phẩm rỗng thì bỏ qua
+                // Kiểm tra: Nếu tên sản phẩm (Cột A) bỏ trống thì bỏ qua dòng này
                 if (empty($row[0])) continue;
 
+                // 4. Ghép dữ liệu từ Excel vào mảng để lưu Database
                 $data = [
-                    'name'        => $row[0],
-                    'category_id' => (int)$row[1],
-                    'brand_id'    => (int)$row[2],
-                    'price'       => (float)$row[3],
-                    'quantity'    => (int)$row[4],
-                    'image'       => 'default.png',
-                    'description' => $row[5] ?? '',
-                    'status'      => isset($row[6]) ? (int)$row[6] : 1
+                    'name'        => $row[0],       // Cột A: Tên sản phẩm
+                    'category_id' => (int)$row[1],  // Cột B: ID Danh mục (phải là số)
+                    'brand_id'    => (int)$row[2],  // Cột C: ID Thương hiệu (phải là số)
+                    'price'       => (float)$row[3],// Cột D: Giá bán
+                    'quantity'    => (int)$row[4],  // Cột E: Số lượng trong kho
+                    'description' => $row[5] ?? '', // Cột F: Mô tả (nếu có)
+                    'image'       => 'default.png', // Mặc định ảnh là default
+                    'status'      => 1              // Mặc định là Hiển thị
                 ];
 
+                // Gọi Model để thêm vào CSDL
                 $this->productModel->addProduct($data);
+                $count++;
             }
             
-            header("Location: index.php?controller=admin-product&action=index&msg=imported");
+            // Thành công -> Quay về và thông báo số lượng đã thêm
+            header("Location: index.php?controller=admin-product&action=index&msg=imported&count=$count");
         } else {
-            // Lỗi đọc file (ví dụ file bị mã hóa hoặc sai định dạng)
-            echo SimpleXLSX::parseError();
+            // Trường hợp file tải lên không phải Excel chuẩn hoặc bị lỗi
+            echo "Lỗi: " . Shuchkin\SimpleXLSX::parseError();
         }
         exit();
     }
 
-    /* ================== UPLOAD ẢNH ================== */
-    private function handleUpload($file)
-    {
+    public function store() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Lưu dữ liệu vào Session tạm thời để nếu lỗi thì lấy lại được
+            $_SESSION['old_post'] = $_POST; 
+    
+            $data = [
+                'name'            => $_POST['name'],
+                'category_id'     => $_POST['category_id'],
+                'brand_id'        => $_POST['brand_id'],
+                'price'           => $_POST['price'],
+                'quantity'        => $_POST['quantity'] ?? 0,
+                'image'           => $this->handleUpload($_FILES['image']) ?? 'default.png',
+                'description'     => $_POST['description'] ?? '',
+                'technical_specs' => $_POST['technical_specs'] ?? '',
+                'status'          => 1
+            ];
+    
+            if ($this->productModel->addProduct($data)) {
+                unset($_SESSION['old_post']); // Xóa dữ liệu tạm khi thành công
+                header("Location: index.php?controller=admin-product&action=index&msg=success");
+            } else {
+                // Nếu lỗi, quay lại trang thêm kèm thông báo lỗi
+                header("Location: index.php?controller=admin-product&action=create&msg=error");
+            }
+            exit();
+        }
+    }
+
+  // app/controllers/admin/AdminProductController.php
+
+    public function update() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $data = [
+                'id'              => $_POST['id'],
+                'name'            => $_POST['name'],
+                'category_id'     => $_POST['category_id'],
+                'brand_id'        => $_POST['brand_id'],
+                'price'           => $_POST['price'],
+                'quantity'        => $_POST['quantity'],
+                'image'           => $_POST['old_image'], // Mặc định dùng ảnh cũ
+                'description'     => $_POST['description'] ?? '',
+                'technical_specs' => $_POST['technical_specs'] ?? '', // Thêm ?? '' để sửa lỗi dòng 95
+                'import_price'    => $_POST['import_price'] ?? 0
+            ];
+
+            // Xử lý upload ảnh mới nếu có
+            if (!empty($_FILES['image']['name'])) {
+                $data['image'] = $this->handleUpload($_FILES['image']);
+            }
+
+            if ($this->productModel->updateProduct($data)) {
+                header("Location: index.php?controller=admin-product&action=index&msg=updated");
+            } else {
+                // Nếu lỗi, lưu lại thông tin vào SESSION để trang edit không bị trống
+                $_SESSION['error_data'] = $_POST;
+                header("Location: index.php?controller=admin-product&action=edit&id=".$data['id']."&msg=error");
+            }
+            exit();
+        }
+    }
+
+    public function delete() {
+        $id = $_GET['id'] ?? null;
+        if ($id) {
+            // Kiểm tra ràng buộc đơn hàng trước khi xóa
+            if ($this->productModel->isProductInProcessingOrders($id)) {
+                $msg = "error_processing";
+            } else {
+                $product = $this->productModel->getProductById($id);
+                if ($product && $this->productModel->deleteProduct($id)) {
+                    if ($product['image'] !== 'default.png') {
+                        @unlink("assets/uploads/products/".$product['image']);
+                    }
+                    $msg = "deleted";
+                }
+            }
+        }
+        header("Location: index.php?controller=admin-product&action=index&msg=" . ($msg ?? 'error'));
+        exit();
+    }
+
+    private function handleUpload($file) {
         $dir = "assets/uploads/products/";
         if (!is_dir($dir)) mkdir($dir, 0777, true);
-
         $fileName = time() . '_' . basename($file['name']);
-        $target   = $dir . $fileName;
-
-        return move_uploaded_file($file['tmp_name'], $target) ? $fileName : null;
+        return move_uploaded_file($file['tmp_name'], $dir . $fileName) ? $fileName : null;
     }
 }

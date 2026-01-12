@@ -16,14 +16,25 @@
             </a>
 
             <!-- Nhập Excel -->
-            <button type="button"
-                onclick="openExcel()"
-                class="btn"
-                style="background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0;
-                        display:flex; align-items:center; gap:8px; padding:10px 18px;
-                        border-radius:6px; font-weight:600;">
-                <i class="fa-solid fa-file-import"></i> Nhập Excel
-            </button>
+            <button type="button" 
+                onclick="document.getElementById('excelInput').click()" 
+                class="btn btn-success" 
+                style="display:flex; align-items:center; gap:8px;">
+            <i class="fa-solid fa-file-import"></i> Nhập Excel
+        </button>
+
+        <form id="importForm" 
+            action="index.php?controller=admin-product&action=importExcel" 
+            method="POST" 
+            enctype="multipart/form-data" 
+            style="display:none">
+            
+            <input type="file" 
+                id="excelInput" 
+                name="excel_file" 
+                accept=".xlsx, .xls"
+                onchange="if(confirm('Bạn có chắc muốn nhập dữ liệu từ file này?')) document.getElementById('importForm').submit();">
+        </form>
 
 
             <!-- Thêm sản phẩm -->
@@ -83,24 +94,17 @@
 
     <?php if (isset($_GET['msg'])): ?>
         <?php
-        $msg = '';
-        $bg = '';
-        if ($_GET['msg'] == 'success') {
-            $msg = 'Thêm sản phẩm thành công!';
-            $bg = 'var(--success)';
-        }
-        if ($_GET['msg'] == 'updated') {
-            $msg = 'Cập nhật thành công!';
-            $bg = 'var(--primary-color)';
-        }
-        if ($_GET['msg'] == 'deleted') {
-            $msg = 'Đã xóa sản phẩm!';
-            $bg = 'var(--danger)';
-        }
+        $msg_map = [
+            'success' => ['Thêm sản phẩm thành công!', 'var(--success)', 'fa-circle-check'],
+            'updated' => ['Cập nhật thành công!', 'var(--primary-color)', 'fa-circle-check'],
+            'deleted' => ['Đã xóa sản phẩm!', 'var(--danger)', 'fa-trash-can'],
+            'error_processing' => ['Không thể xóa! Sản phẩm đang có trong đơn hàng đang xử lý.', '#f59e0b', 'fa-triangle-exclamation']
+        ];
+        $status = $msg_map[$_GET['msg']] ?? null;
         ?>
-        <?php if ($msg): ?>
-            <div style="padding: 12px 20px; background: <?= $bg ?>; color: #fff; border-radius: 6px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; font-weight: 500;">
-                <i class="fa-solid fa-circle-check"></i> <?= $msg ?>
+        <?php if ($status): ?>
+            <div style="padding: 12px 20px; background: <?= $status[1] ?>; color: #fff; border-radius: 6px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; font-weight: 500;">
+                <i class="fa-solid <?= $status[2] ?>"></i> <?= $status[0] ?>
             </div>
         <?php endif; ?>
     <?php endif; ?>
@@ -156,10 +160,12 @@
                                     class="btn-sm btn-delete"
                                     onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')" title="Xóa" style="background: #fff5f5; color: var(--danger); border: 1px solid #fed7d7; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 6px;">
                                     <i class="fa-solid fa-trash"></i>
+                                    
                                 </a>
                             </div>
                         </td>
                     </tr>
+                    
                 <?php endforeach; ?>
             <?php else: ?>
                 <tr>
@@ -170,6 +176,7 @@
                     </td>
                 </tr>
             <?php endif; ?>
+            
         </tbody>
     </table>
 </div>

@@ -42,7 +42,7 @@
 
                     <ul class="submenu" id="productSubmenu" style="<?php echo ($controller == 'product' || $controller == 'category' || $controller == 'brand') ? 'display: block;' : 'display: none;'; ?>">
                         <li>
-                            <a href="index.php?controller=admin-product&action=index" class="<?php echo ($controller == 'product') ? 'active' : ''; ?>">
+                            <a href="index.php?controller=admin-product" class="<?php echo ($controller == 'product') ? 'active' : ''; ?>">
                                 <i class="fa-solid fa-list-ul"></i> Danh sách sản phẩm
                             </a>
                         </li>
@@ -65,10 +65,51 @@
                     </a>
                 </li>
 
-                <li>
-                    <a href="index.php?controller=admin-order" class="<?php echo ($controller == 'order') ? 'active' : ''; ?>">
-                        <i class="fa-solid fa-file-invoice-dollar"></i> Đơn hàng
+                <li class="has-submenu <?php echo ($controller == 'order') ? 'active' : ''; ?>">
+                    <a href="javascript:void(0)" onclick="toggleSubmenu(this)" class="menu-item">
+                        <i class="fa-solid fa-file-invoice-dollar"></i>
+                        <span>Đơn hàng</span>
+                        <i class="fa-solid fa-chevron-down arrow-icon" style="margin-left: auto; font-size: 12px;"></i>
                     </a>
+
+                    <ul class="submenu" id="orderSubmenu" style="<?php echo ($controller == 'order') ? 'display: block;' : 'display: none;'; ?>">
+                    <li>
+                        <a href="index.php?controller=admin-order&action=index" 
+                        class="<?php echo ($controller == 'order' && ($action == 'index' || !isset($_GET['action']))) ? 'active' : ''; ?>">
+                            <i class="fa-solid fa-list"></i> Tất cả
+                        </a>
+                    </li>
+                    <li>
+                        <a href="index.php?controller=admin-order&action=pending" 
+                        class="<?php echo ($action == 'pending') ? 'active' : ''; ?>">
+                            <i class="fa-solid fa-clock"></i> Chờ xác nhận
+                        </a>
+                    </li>
+                    <li>
+                        <a href="index.php?controller=admin-order&action=pickup" 
+                        class="<?php echo ($action == 'pickup') ? 'active' : ''; ?>">
+                            <i class="fa-solid fa-box-archive"></i> Chờ lấy hàng
+                        </a>
+                    </li>
+                    <li>
+                        <a href="index.php?controller=admin-order&action=shipping" 
+                        class="<?php echo ($action == 'shipping') ? 'active' : ''; ?>">
+                            <i class="fa-solid fa-truck"></i> Đang giao
+                        </a>
+                    </li>
+                    <li>
+                        <a href="index.php?controller=admin-order&action=completed" 
+                        class="<?php echo ($action == 'completed') ? 'active' : ''; ?>">
+                            <i class="fa-solid fa-check-double"></i> Đã giao
+                        </a>
+                    </li>
+                    <li>
+                        <a href="index.php?controller=admin-order&action=cancelled" 
+                        class="<?php echo ($action == 'cancelled') ? 'active' : ''; ?>">
+                            <i class="fa-solid fa-ban"></i> Đã hủy
+                        </a>
+                    </li>
+                </ul>
                 </li>
 
                 <li>
