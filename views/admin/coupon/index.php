@@ -137,6 +137,9 @@ if (!isset($errors)) $errors = [];
                 class="btn btn-success">
                 <i class="fas fa-file-excel"></i> Xuất Excel
             </a>
+            <a href="index.php?controller=admin-coupon&action=import" class="btn btn-warning">
+                <i class="fa-solid fa-file-import"></i> Nhập Excel
+            </a>
         </form>
     </div>
 

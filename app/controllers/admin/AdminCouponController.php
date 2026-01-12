@@ -1,5 +1,9 @@
 <?php
 require_once 'app/models/admin/AdminCouponModel.php';
+// Thêm thư viện SimpleXLSX
+require_once 'app/libs/SimpleXLSX.php';
+
+use Shuchkin\SimpleXLSX;
 
 class AdminCouponController
 {
@@ -211,5 +215,111 @@ class AdminCouponController
         }
         echo '</tbody></table></body></html>';
         exit;
+    }
+
+    // --- 5. HIỂN THỊ FORM IMPORT ---
+    public function import()
+    {
+        $page_title = "Nhập Coupon từ Excel";
+        // Cần tạo view: views/admin/coupon/import.php
+        $content_view = 'views/admin/coupon/import.php';
+        require_once 'views/admin/layouts/page.php';
+    }
+
+    // --- 6. XỬ LÝ IMPORT (Khớp với DB của bạn) ---
+    public function importStore()
+    {
+        // Kiểm tra submit và file
+        if (isset($_POST['btn_import']) && isset($_FILES['file_excel'])) {
+            $file = $_FILES['file_excel'];
+
+            // Validate file
+            if ($file['error'] !== 0) {
+                echo "<script>alert('Lỗi khi upload file!'); window.history.back();</script>";
+                return;
+            }
+
+            // Gọi thư viện SimpleXLSX
+            if ($xlsx = SimpleXLSX::parse($file['tmp_name'])) {
+
+                $data = $xlsx->rows(); // Dùng hàm rows() cơ bản
+                $countSuccess = 0;
+                $countFail = 0;
+                $failList = [];
+
+                foreach ($data as $index => $row) {
+                    // Bỏ qua dòng tiêu đề
+                    if ($index === 0) continue;
+
+                    // Mapping dữ liệu (Code, Type, Value, Min Order, Limit, Points, Start, End)
+                    // Cột 0: Code
+                    $code           = isset($row[0]) ? strtoupper(trim($row[0])) : '';
+                    // Cột 1: Type
+                    $type           = isset($row[1]) ? strtolower(trim($row[1])) : 'fixed';
+                    // Cột 2: Value
+                    $value          = isset($row[2]) ? (float)$row[2] : 0;
+                    // Cột 3: Min Order
+                    $min_order      = isset($row[3]) ? (float)$row[3] : 0;
+                    // Cột 4: Usage Limit
+                    $usage_limit    = isset($row[4]) ? (int)$row[4] : 100;
+                    // Cột 5: Points Cost
+                    $points_cost    = isset($row[5]) ? (int)$row[5] : 0;
+                    // Cột 6: Start Date
+                    $start_date     = isset($row[6]) ? $row[6] : null;
+                    // Cột 7: End Date
+                    $end_date       = isset($row[7]) ? $row[7] : null;
+
+                    // VALIDATION
+                    // 1. Mã không được rỗng
+                    if (empty($code)) {
+                        $countFail++;
+                        continue;
+                    }
+
+                    // 2. Validate loại giảm giá
+                    if ($type !== 'percent' && $type !== 'fixed') {
+                        $type = 'fixed';
+                    }
+
+                    // 3. Kiểm tra trùng mã
+                    // checkCodeExists cần được update để chỉ check trùng code, ko check ID
+                    if ($this->model->checkCodeExists($code)) {
+                        $failList[] = "$code (Đã tồn tại)";
+                        $countFail++;
+                        continue;
+                    }
+
+                    // 4. Chuẩn bị data
+                    $couponData = [
+                        'code'            => $code,
+                        'discount_type'   => $type,
+                        'discount_value'  => $value,
+                        'min_order_value' => $min_order,
+                        'usage_limit'     => $usage_limit,
+                        'points_cost'     => $points_cost,
+                        'start_date'      => $start_date,
+                        'end_date'        => $end_date,
+                        'status'          => 1 // Active
+                    ];
+
+                    // 5. Gọi hàm thêm mới (Cần thêm insertExcel vào Model)
+                    if ($this->model->insertExcel($couponData)) {
+                        $countSuccess++;
+                    } else {
+                        $failList[] = "$code (Lỗi SQL)";
+                        $countFail++;
+                    }
+                }
+
+                // Thông báo kết quả
+                $msg = "Nhập thành công: $countSuccess. Thất bại: $countFail";
+                if ($countFail > 0) {
+                    $msg .= "\\nChi tiết: " . implode(", ", $failList);
+                }
+                echo "<script>alert('$msg'); window.location.href='index.php?controller=admin-coupon';</script>";
+            } else {
+                echo SimpleXLSX::parseError();
+            }
+        }
     }
 }
