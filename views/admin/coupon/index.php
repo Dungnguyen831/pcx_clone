@@ -126,12 +126,17 @@ if (!isset($errors)) $errors = [];
                     <option value="0" <?= $statusFilter === '0' ? 'selected' : '' ?>>Đang Tạm dừng</option>
                 </select>
             </div>
+
             <div class="filter-item-btn">
                 <button type="submit" class="btn btn-primary" title="Tìm kiếm"><i class="fa-solid fa-search"></i> Tìm</button>
                 <?php if ($keyword || $statusFilter !== '' || $typeFilter): ?>
                     <a href="index.php?controller=admin-coupon" class="btn btn-secondary" title="Reset bộ lọc"><i class="fa-solid fa-rotate-right"></i></a>
                 <?php endif; ?>
             </div>
+            <a href="index.php?controller=admin-coupon&action=exportExcel&keyword=<?= $filters['keyword'] ?>&status=<?= $filters['status'] ?>"
+                class="btn btn-success">
+                <i class="fas fa-file-excel"></i> Xuất Excel
+            </a>
         </form>
     </div>
 
