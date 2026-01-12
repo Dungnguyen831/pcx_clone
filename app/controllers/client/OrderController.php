@@ -16,7 +16,8 @@ class OrderController {
             exit;
         }
 
-        $orders = $this->orderModel->getOrdersByUser($_SESSION['user_id']);
+        $status = $_GET['status'] ?? null;
+        $orders = $this->orderModel->getOrdersByUser($_SESSION['user_id'], $status);
         require_once 'views/client/orders/index.php';
     }
 
@@ -38,4 +39,5 @@ class OrderController {
         $_SESSION['success_msg'] = "Đã hủy đơn hàng!";
         header("Location: index.php?controller=order&action=index");
     }
+    
 }

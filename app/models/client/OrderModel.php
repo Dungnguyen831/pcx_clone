@@ -9,10 +9,16 @@ class OrderModel {
     }
 
     // Lấy danh sách đơn hàng của một người dùng
-    public function getOrdersByUser($user_id) {
-        $sql = "SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC";
+    public function getOrdersByUser($user_id, $status = null) {
+        $sql = "SELECT * FROM orders WHERE user_id = ?";
+        $params = [$user_id];
+        if ($status !== null) {
+        $sql .= " AND status = ?";
+        $params[] = $status;
+        }
+        $sql .= " ORDER BY created_at DESC";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$user_id]);
+        $stmt->execute($params);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
