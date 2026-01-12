@@ -27,7 +27,11 @@ class AuthController
 
                 if ($user['role'] == 1) {
                     header("Location: index.php?controller=admin");
-                } else {
+                } 
+                else if($user['role']==2){
+                    header("Location: index.php?controller=warehouse");
+                }
+                else{
                     header("Location: index.php");
                 }
                 exit();
@@ -87,7 +91,18 @@ class AuthController
     // 5. Đăng xuất
     public function logout()
     {
+        // Bắt đầu session nếu nó chưa được khởi chạy (phòng trường hợp lỗi)
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        // Xóa sạch tất cả các biến trong $_SESSION
+        $_SESSION = array();
+
+        // Hủy bỏ session trên server
         session_destroy();
+
+        // Chuyển hướng về trang chủ và ép buộc làm mới header
         header("Location: index.php");
         exit();
     }

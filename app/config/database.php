@@ -19,4 +19,21 @@ class Database
         }
         return $this->conn;
     }
+    public function fetchAll($sql) {
+        $db = $this->getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    public function execute($sql) {
+        $db = $this->getConnection();
+        $stmt = $db->prepare($sql);
+        return $stmt->execute();
+    }
+    public function insert($sql) {
+        $db = $this->getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->execute();
+        return $db->lastInsertId();
+    }
 }

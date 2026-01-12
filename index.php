@@ -1,5 +1,8 @@
 <?php
 session_start(); // Khởi động Session (cho Giỏ hàng)
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+require_once 'app/config/database.php';
 
 // 1. Nhúng file kết nối
 require_once 'app/config/database.php';
@@ -79,6 +82,15 @@ switch ($controller) {
     case 'user':
         require_once 'app/controllers/admin/AdminUserController.php';
         $obj = new UserController();
+        break;
+        case 'warehouse':
+        require_once 'app/controllers/warehouse/WarehouseController.php';
+        $obj = new WarehouseController();
+        break;
+
+    case 'auth':
+        require_once 'app/controllers/client/AuthController.php';
+        $obj = new AuthController();
         break;
 
     default:

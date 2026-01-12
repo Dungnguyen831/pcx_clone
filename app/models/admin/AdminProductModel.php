@@ -4,11 +4,13 @@ require_once 'app/config/database.php';
 class AdminProductModel
 {
     private $conn;
+    private $db;
 
     public function __construct()
     {
         $db = new Database();
         $this->conn = $db->getConnection();
+        $this->db = new Database();
     }
 
     public function getAllProductsAdmin($search_id = null, $search_name = null)
@@ -122,5 +124,14 @@ class AdminProductModel
     public function getBrands()
     {
         return $this->conn->query("SELECT * FROM brands")->fetchAll(PDO::FETCH_ASSOC);
+    }
+   public function getAllProducts() {
+    $sql = "SELECT * FROM products";
+    $data = $this->db->fetchAll($sql);
+    
+    // BỎ COMMENT dòng dưới đây, chạy web 1 lần rồi xem kết quả hiện ra màn hình
+    // echo "<pre>"; print_r($data[0]); echo "</pre>"; die();
+    
+    return $data;
     }
 }

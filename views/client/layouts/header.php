@@ -38,6 +38,13 @@ else if (isset($_SESSION['cart'])) {
                 <li><a href="index.php">Trang chủ</a></li>
                 <li><a href="index.php?controller=home&action=listproduct">Sản phẩm</a></li>
                 <li><a href="index.php?controller=order&action=index">Đơn hàng</a></li>
+                <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] == 2): ?>
+                <li>
+                    <a href="index.php?controller=warehouse" style="color: black;">
+                QUẢN LÝ KHO
+                    </a>
+                </li>
+                <?php endif; ?>
             </ul>
         </nav>
 

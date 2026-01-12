@@ -59,7 +59,7 @@
                 <tr>
                     <td>#<?= $item['category_id'] ?></td>
                     <td style="font-weight: 600; color: #2c3e50;"><?= htmlspecialchars($item['name']) ?></td>
-                    <td style="color: #7f8c8d; font-size: 13px;"><?= htmlspecialchars($item['description']) ?></td>
+                    <td style="color: #7f8c8d; font-size: 13px;"><?= htmlspecialchars($item['description'] ?? '') ?></td>
                     <td>
                         <span style="background: <?= $item['status'] == 1 ? '#2ecc71' : '#95a5a6' ?>; color: #fff; padding: 3px 10px; border-radius: 20px; font-size: 11px;">
                             <?= $item['status'] == 1 ? 'Hiển thị' : 'Ẩn' ?>
