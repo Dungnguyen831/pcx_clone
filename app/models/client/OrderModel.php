@@ -14,12 +14,17 @@ class OrderModel
         }
     }
 
-    // --- GIỮ NGUYÊN LOGIC CŨ ---
-    public function getOrdersByUser($user_id)
-    {
-        $sql = "SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC";
+    // Lấy danh sách đơn hàng của một người dùng
+    public function getOrdersByUser($user_id, $status = null) {
+        $sql = "SELECT * FROM orders WHERE user_id = ?";
+        $params = [$user_id];
+        if ($status !== null) {
+        $sql .= " AND status = ?";
+        $params[] = $status;
+        }
+        $sql .= " ORDER BY created_at DESC";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$user_id]);
+        $stmt->execute($params);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -178,5 +183,15 @@ class OrderModel
 
             $this->db->prepare($sqlRestore)->execute([':code' => $order['coupon_code']]);
         }
+    }
+
+    //Nhận
+    public function updateStatus($orderId, $status)
+    {
+        $sql = "UPDATE orders SET status = :status WHERE order_id = :id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindParam(':status', $status);
+        $stmt->bindParam(':id', $orderId);
+        return $stmt->execute();
     }
 }

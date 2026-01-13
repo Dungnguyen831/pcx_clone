@@ -19,7 +19,8 @@ class OrderController
             exit;
         }
 
-        $orders = $this->orderModel->getOrdersByUser($_SESSION['user_id']);
+        $status = $_GET['status'] ?? null;
+        $orders = $this->orderModel->getOrdersByUser($_SESSION['user_id'], $status);
         require_once 'views/client/orders/index.php';
     }
 
@@ -48,4 +49,22 @@ class OrderController
         $_SESSION['success_msg'] = "Đã hủy đơn hàng!";
         header("Location: index.php?controller=order&action=index");
     }
+
+    public function received()
+    {
+        if (!isset($_GET['id'])) {
+            header("Location: index.php?controller=order");
+            exit;
+        }
+
+        $orderId = $_GET['id'];
+
+        // Chỉ cập nhật sang ĐÃ GIAO (3)
+        $this->orderModel->updateStatus($orderId, 3);
+
+        // Chuyển sang tab ĐÃ GIAO
+        header("Location: index.php?controller=order&action=index&status=3");
+        exit;
+    }   
+
 }

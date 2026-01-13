@@ -1,9 +1,40 @@
 <?php require_once 'views/client/layouts/header.php'; ?>
 
+<?php
+// Xác định trạng thái hiện tại
+$currentStatus = $_GET['status'] ?? 'all';
+
+// Các tab trạng thái
+$tabs = [
+    'all' => 'Tất cả',
+    0 => 'Chờ xác nhận',
+    1 => 'Chờ lấy hàng',
+    2 => 'Đang giao',
+    3 => 'Đã giao',
+    4 => 'Đã hủy'
+];
+?>
+
 <div class="container" style="margin-top: 30px; min-height: 500px;">
     <h2 class="section-title" style="margin-bottom: 25px;">
         <i class="fa-solid fa-clock-rotate-left"></i> Lịch sử đơn hàng
     </h2>
+
+<!-- ===== ORDER STATUS TABS ===== -->
+    <div class="order-tab-wrapper">
+        <div class="order-tab-bar">
+            <?php foreach ($tabs as $key => $label): 
+                $active = ((string)$currentStatus === (string)$key) ? 'active' : '';
+                $url = ($key === 'all')
+                    ? 'index.php?controller=order&action=index'
+                    : 'index.php?controller=order&action=index&status=' . $key;
+            ?>
+                <a href="<?= $url ?>" class="order-tab-item <?= $active ?>">
+                    <?= $label ?>
+                </a>
+            <?php endforeach; ?>
+        </div>
+    </div>
 
     <?php if (empty($orders)): ?>
         <div style="text-align: center; padding: 50px; background: #fff; border-radius: 8px;">
@@ -54,11 +85,21 @@
                             Xem chi tiết
                         </a>
 
+                        <!-- NÚT ĐÃ NHẬN: chỉ hiện khi đang giao -->
+                        <?php if ($o['status'] == 2): ?>
+                            <a href="index.php?controller=order&action=received&id=<?= $o['order_id'] ?>"
+                            class="btn-sm btn-received"
+                            onclick="return confirm('Xác nhận bạn đã nhận được hàng?')">
+                                Đã nhận
+                            </a>
+                        <?php endif; ?>
+
+                        <!-- NÚT HỦY: chỉ khi chờ xác nhận -->
                         <?php if ($o['status'] == 0): ?>
                             <a href="index.php?controller=order&action=cancel&id=<?= $o['order_id'] ?>" 
                                class="btn-sm" 
                                style="background: #fff0f0; color: #e74c3c; border: 1px solid #fadbd8;"
-onclick="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?')">
+                               onclick="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?')">
                                Hủy đơn
                             </a>
                         <?php endif; ?>
