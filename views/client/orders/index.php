@@ -85,11 +85,21 @@ $tabs = [
                             Xem chi tiết
                         </a>
 
+                        <!-- NÚT ĐÃ NHẬN: chỉ hiện khi đang giao -->
+                        <?php if ($o['status'] == 2): ?>
+                            <a href="index.php?controller=order&action=received&id=<?= $o['order_id'] ?>"
+                            class="btn-sm btn-received"
+                            onclick="return confirm('Xác nhận bạn đã nhận được hàng?')">
+                                Đã nhận
+                            </a>
+                        <?php endif; ?>
+
+                        <!-- NÚT HỦY: chỉ khi chờ xác nhận -->
                         <?php if ($o['status'] == 0): ?>
                             <a href="index.php?controller=order&action=cancel&id=<?= $o['order_id'] ?>" 
                                class="btn-sm" 
                                style="background: #fff0f0; color: #e74c3c; border: 1px solid #fadbd8;"
-onclick="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?')">
+                               onclick="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?')">
                                Hủy đơn
                             </a>
                         <?php endif; ?>

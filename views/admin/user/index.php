@@ -1,6 +1,13 @@
 <div class="card">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
         <h3>Danh sách khách hàng</h3>
+            <div style="text-align: right; margin-bottom: 15px;">
+                <a href="index.php?controller=user&action=exportExcel"
+                    class="btn"
+                    style="background:#2ecc71;color:#fff;font-weight:600;">
+                    <i class="fa fa-file-excel"></i> Xuất Excel
+                </a>
+            </div>  
         </div>
 
     <table class="table-admin">

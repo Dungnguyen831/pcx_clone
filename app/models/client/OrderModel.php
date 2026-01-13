@@ -205,4 +205,14 @@ class OrderModel {
             $this->db->prepare($sqlRestore)->execute([':code' => $order['coupon_code']]);
         }
     }
+
+    //Nhận
+    public function updateStatus($orderId, $status)
+    {
+        $sql = "UPDATE orders SET status = :status WHERE order_id = :id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindParam(':status', $status);
+        $stmt->bindParam(':id', $orderId);
+        return $stmt->execute();
+    }
 }
