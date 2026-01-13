@@ -116,41 +116,41 @@ class OrderModel
         }
     }
 
-    // --- SỬA LẠI ĐỂ HOÀN KHO KHI HỦY ---
-    public function cancelOrder($order_id)
-    {
-        try {
-            $this->db->beginTransaction();
+    // // --- SỬA LẠI ĐỂ HOÀN KHO KHI HỦY ---
+    // public function cancelOrder($order_id)
+    // {
+    //     try {
+    //         $this->db->beginTransaction();
 
-            $order = $this->getOrderById($order_id);
-            $items = $this->getOrderItems($order_id);
+    //         $order = $this->getOrderById($order_id);
+    //         $items = $this->getOrderItems($order_id);
 
-            if (!$order) throw new Exception("Order not found");
+    //         if (!$order) throw new Exception("Order not found");
 
-            // Cập nhật trạng thái Hủy (4)
-            $sqlUpdate = "UPDATE orders SET status = 4 WHERE order_id = ?";
-            $this->db->prepare($sqlUpdate)->execute([$order_id]);
+    //         // Cập nhật trạng thái Hủy (4)
+    //         $sqlUpdate = "UPDATE orders SET status = 4 WHERE order_id = ?";
+    //         $this->db->prepare($sqlUpdate)->execute([$order_id]);
 
-            // BỔ SUNG: Hoàn lại kho
-            $sqlRestoreInv = "UPDATE inventory SET quantity = quantity + ? WHERE product_id = ?";
-            $stmtRestore = $this->db->prepare($sqlRestoreInv);
-            foreach ($items as $item) {
-                $stmtRestore->execute([$item['quantity'], $item['product_id']]);
-            }
+    //         // BỔ SUNG: Hoàn lại kho
+    //         $sqlRestoreInv = "UPDATE inventory SET quantity = quantity + ? WHERE product_id = ?";
+    //         $stmtRestore = $this->db->prepare($sqlRestoreInv);
+    //         foreach ($items as $item) {
+    //             $stmtRestore->execute([$item['quantity'], $item['product_id']]);
+    //         }
 
-            // BỔ SUNG: Hoàn lại mã giảm giá
-            if (!empty($order['coupon_code'])) {
-                $sqlRestoreCoupon = "UPDATE coupons SET used_count = used_count - 1 WHERE code = ? AND used_count > 0";
-                $this->db->prepare($sqlRestoreCoupon)->execute([$order['coupon_code']]);
-            }
+    //         // BỔ SUNG: Hoàn lại mã giảm giá
+    //         if (!empty($order['coupon_code'])) {
+    //             $sqlRestoreCoupon = "UPDATE coupons SET used_count = used_count - 1 WHERE code = ? AND used_count > 0";
+    //             $this->db->prepare($sqlRestoreCoupon)->execute([$order['coupon_code']]);
+    //         }
 
-            $this->db->commit();
-            return true;
-        } catch (Exception $e) {
-            $this->db->rollBack();
-            return false;
-        }
-    }
+    //         $this->db->commit();
+    //         return true;
+    //     } catch (Exception $e) {
+    //         $this->db->rollBack();
+    //         return false;
+    //     }
+    // }
 
     // Hủy đơn (Trạng thái 4) + Hoàn lại số lượng vào kho
     public function cancelOrder($order_id) {
