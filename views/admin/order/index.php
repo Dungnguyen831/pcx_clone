@@ -11,8 +11,6 @@
                 <div style="color: #7f8c8d; font-size: 13px; font-weight: 600; margin-bottom: 5px;">ĐƠN CHỜ DUYỆT</div>
                 <div style="font-size: 24px; font-weight: 700; color: #f39c12;"><?= $stats['pending'] ?? 0 ?></div>
             </div>
-
-           
         <?php endif; ?>
 
     </div>
@@ -41,7 +39,7 @@
                 class="btn" 
                 style="background:#2ecc71; color:#fff; padding:10px 15px; border-radius:6px; font-weight:600; text-decoration:none;">
                 <i class="fa-solid fa-file-excel"></i> Xuất Excel 
-</a>
+            </a>
         </div>  
     </div>
 
@@ -92,15 +90,35 @@
                         <td style="padding: 15px; color: #5a6a85;"><?= htmlspecialchars($o['customer_phone']) ?></td>
                         <td style="padding: 15px; color: #e74c3c; font-weight: 700;"><?= number_format($o['final_money'], 0, ',', '.') ?>đ</td>
                         <td style="padding: 15px; font-size: 13px; color: #5a6a85;"><?= date('d/m/Y H:i', strtotime($o['created_at'])) ?></td>
+                        
                         <td style="padding: 15px; text-align: center;">
-                            <?php if ($o['status'] == 3 || $o['status'] == 4): ?>
-                                <span style="padding: 6px 15px; border-radius: 20px; font-size: 11px; font-weight: 700; display: inline-block;
-                                    <?= $o['status'] == 3 ? 'background:#d4edda; color:#155724;' : 'background:#f8d7da; color:#721c24;' ?>">
-                                    <i class="fa-solid <?= $o['status'] == 3 ? 'fa-check-double' : 'fa-ban' ?>" style="margin-right: 5px;"></i>
-                                    <?= $o['status'] == 3 ? 'ĐÃ HOÀN THÀNH' : 'ĐÃ HỦY' ?>
+                            <?php if ($o['status'] == 3): ?>
+                                <span style="padding: 6px 15px; border-radius: 20px; font-size: 11px; font-weight: 700; background:#d4edda; color:#155724;">
+                                    <i class="fa-solid fa-check-double"></i> ĐÃ HOÀN THÀNH
+                                </span>
+                            <?php elseif ($o['status'] == 4): ?>
+                                <span style="padding: 6px 15px; border-radius: 20px; font-size: 11px; font-weight: 700; background:#f8d7da; color:#721c24;">
+                                    <i class="fa-solid fa-ban"></i> ĐÃ HỦY
+                                </span>
+                            <?php elseif ($o['status'] == 2): ?>
+                                <span style="padding: 6px 15px; border-radius: 20px; font-size: 11px; font-weight: 700; background:#fff3cd; color:#856404;">
+                                    <i class="fa-solid fa-truck-fast"></i> ĐANG GIAO HÀNG
+                                </span>
+                            <?php elseif ($o['status'] == 1): ?>
+                                <span style="padding: 6px 15px; border-radius: 20px; font-size: 11px; font-weight: 700; background:#e3f2fd; color:#0d47a1;">
+                                    <i class="fa-solid fa-box"></i> ĐÃ XÁC NHẬN
                                 </span>
                             <?php else: ?>
-                                <div style="display: flex; gap: 8px; justify-content: center;">
+                                <span style="padding: 6px 15px; border-radius: 20px; font-size: 11px; font-weight: 700; background:#ecf0f1; color:#7f8c8d;">
+                                    <i class="fa-solid fa-clock"></i> CHỜ DUYỆT
+                                </span>
+                            <?php endif; ?>
+                        </td>
+
+                        <td style="padding: 15px; text-align: center;">
+                            <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
+                                
+                                <?php if ($o['status'] == 0 || $o['status'] == 1): ?>
                                     <form action="index.php" method="GET" style="margin: 0;">
                                         <input type="hidden" name="controller" value="admin-order">
                                         <input type="hidden" name="action" value="updateStatus">
@@ -108,46 +126,51 @@
                                         
                                         <?php 
                                             $btn_text = ""; $next_status = 0; $btn_css = "";
-                                            switch ($o['status']) {
-                                                case 0:
-                                                    $btn_text = "Xác nhận đơn"; $next_status = 1;
-                                                    $btn_css = "background: #e3f2fd; color: #2196f3; border: 1px solid #2196f3;";
-                                                    break;
-                                                case 1:
-                                                    $btn_text = "Giao hàng"; $next_status = 2;
-                                                    $btn_css = "background: #fff3cd; color: #856404; border: 1px solid #856404;";
-                                                    break;
-                                                case 2:
-                                                    $btn_text = "Hoàn thành"; $next_status = 3;
-                                                    $btn_css = "background: #e8f5e9; color: #2e7d32; border: 1px solid #2e7d32;";
-                                                    break;
+                                            if ($o['status'] == 0) {
+                                                // 0 -> 1: Xác nhận
+                                                $btn_text = "Xác nhận đơn"; 
+                                                $next_status = 1;
+                                                $btn_css = "background: #e3f2fd; color: #2196f3; border: 1px solid #2196f3;";
+                                            } elseif ($o['status'] == 1) {
+                                                // 1 -> 2: Giao hàng
+                                                $btn_text = "Giao hàng"; 
+                                                $next_status = 2;
+                                                $btn_css = "background: #fff3cd; color: #856404; border: 1px solid #856404;";
                                             }
                                         ?>
+
                                         <input type="hidden" name="status" value="<?= $next_status ?>">
                                         <button type="submit" onclick="return confirm('Chuyển sang: <?= $btn_text ?>?')"
                                                 style="padding: 7px 12px; border-radius: 20px; font-size: 10px; font-weight: 700; cursor: pointer; text-transform: uppercase; outline: none; <?= $btn_css ?>">
                                             <?= $btn_text ?> <i class="fa-solid fa-chevron-right" style="margin-left: 4px; font-size: 9px;"></i>
                                         </button>
                                     </form>
+                                <?php endif; ?>
 
-                                    <?php if ($o['status'] == 0 ): ?>
-                                        <form action="index.php" method="GET" style="margin: 0;">
-                                            <input type="hidden" name="controller" value="admin-order">
-                                            <input type="hidden" name="action" value="updateStatus">
-                                            <input type="hidden" name="id" value="<?= $o['order_id'] ?>">
-                                            <input type="hidden" name="status" value="4"> <button type="submit" onclick="return confirm('Bạn có chắc chắn muốn HỦY đơn hàng này?')"
-                                                    style="padding: 7px 12px; border-radius: 20px; font-size: 10px; font-weight: 700; cursor: pointer; background: #fff1f0; color: #f5222d; border: 1px solid #ffa39e; text-transform: uppercase; outline: none;">
-                                                Hủy <i class="fa-solid fa-xmark" style="margin-left: 4px;"></i>
-                                            </button>
-                                        </form>
-                                    <?php endif; ?>
-                                </div>
-                            <?php endif; ?>
-                        </td>
-                        <td style="padding: 15px; text-align: center;">
-                            <a href="index.php?controller=admin-order&action=detail&id=<?= $o['order_id'] ?>" style="color:#3498db; font-size: 18px;" title="Xem chi tiết">
-                                <i class="fa-solid fa-eye"></i>
-                            </a>
+                                <?php if ($o['status'] == 2): ?>
+                                    <span style="font-size: 12px; font-weight: 600; color: #d35400;">
+                                        <i class="fa-solid fa-truck"></i> Đang giao hàng...
+                                    </span>
+                                <?php endif; ?>
+
+                                <?php if ($o['status'] == 0 ): ?>
+                                    <form action="index.php" method="GET" style="margin: 0;">
+                                        <input type="hidden" name="controller" value="admin-order">
+                                        <input type="hidden" name="action" value="updateStatus">
+                                        <input type="hidden" name="id" value="<?= $o['order_id'] ?>">
+                                        <input type="hidden" name="status" value="4"> 
+                                        <button type="submit" onclick="return confirm('Bạn có chắc chắn muốn HỦY đơn hàng này?')"
+                                                style="padding: 7px 12px; border-radius: 20px; font-size: 10px; font-weight: 700; cursor: pointer; background: #fff1f0; color: #f5222d; border: 1px solid #ffa39e; text-transform: uppercase; outline: none;">
+                                            Hủy <i class="fa-solid fa-xmark" style="margin-left: 4px;"></i>
+                                        </button>
+                                    </form>
+                                <?php endif; ?>
+
+                                <a href="index.php?controller=admin-order&action=detail&id=<?= $o['order_id'] ?>" style="color:#3498db; font-size: 18px;" title="Xem chi tiết">
+                                    <i class="fa-solid fa-eye"></i>
+                                </a>
+
+                            </div>
                         </td>
                     </tr>
                 <?php endforeach; ?>
