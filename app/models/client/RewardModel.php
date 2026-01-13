@@ -7,7 +7,7 @@ class RewardModel
         $db = new Database();
         $this->conn = $db->getConnection();
     }
-
+    //Thay đổi hàm lấy danh sách mã giảm giá để kèm trạng thái đã dùng/chưa dùng của user
     // --- LOGIC TỰ ĐỘNG QUÉT ĐIỂM TỪ ĐƠN HÀNG HOÀN THÀNH ---
     //lấy những đơn hàng có trạng thái là hoàn thành nhưng chưa được tính điểm
     //tính điểm cập nhật vào bảng customers
