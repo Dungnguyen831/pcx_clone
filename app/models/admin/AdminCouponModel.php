@@ -148,4 +148,33 @@ class AdminCouponModel
         $stmt = $this->conn->prepare($sql);
         return $stmt->execute();
     }
+
+    // --- BỔ SUNG HÀM IMPORT EXCEL ---
+    public function insertExcel($data)
+    {
+        $sql = "INSERT INTO coupons 
+                (code, discount_type, discount_value, min_order_value, usage_limit, points_cost, start_date, end_date, status) 
+                VALUES 
+                (:code, :type, :value, :min_val, :limit, :points, :start, :end, :status)";
+
+        $params = [
+            ':code'      => $data['code'],
+            ':type'      => $data['discount_type'],
+            ':value'     => $data['discount_value'],
+            ':min_val'   => $data['min_order_value'],
+            ':limit'     => $data['usage_limit'],
+            ':points'    => $data['points_cost'],
+            ':start'     => $data['start_date'],
+            ':end'       => $data['end_date'],
+            ':status'    => $data['status']
+        ];
+
+        try {
+            $stmt = $this->conn->prepare($sql);
+            return $stmt->execute($params);
+        } catch (PDOException $e) {
+            // Có thể log lỗi ra file nếu cần
+            return false;
+        }
+    }
 }
