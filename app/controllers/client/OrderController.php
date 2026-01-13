@@ -1,16 +1,19 @@
 <?php
 require_once 'app/models/client/OrderModel.php';
 
-class OrderController {
-     private $orderModel;
+class OrderController
+{
+    private $orderModel;
 
-    public function __construct() {
+    public function __construct()
+    {
         global $pdo; // lấy PDO đã tạo ở index.php
         $this->orderModel = new OrderModel($pdo);
     }
 
     // Danh sách đơn hàng
-    public function index() {
+    public function index()
+    {
         if (!isset($_SESSION['user_id'])) {
             header("Location: index.php?controller=auth&action=login");
             exit;
@@ -21,7 +24,8 @@ class OrderController {
     }
 
     // Chi tiết đơn hàng
-    public function detail() {
+    public function detail()
+    {
         $order_id = $_GET['id'] ?? 0;
 
         $order = $this->orderModel->getOrderById($order_id);
@@ -31,7 +35,8 @@ class OrderController {
     }
 
     // Hủy đơn
-    public function cancel() {
+    public function cancel()
+    {
         $order_id = $_GET['id'];
 
         $this->orderModel->cancelOrder($order_id);

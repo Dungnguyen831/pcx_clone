@@ -5,6 +5,7 @@ SET time_zone = "+07:00";
 -- --------------------------------------------------------
 -- 1. Bảng USERS (Đã bỏ address)
 -- --------------------------------------------------------
+
 CREATE TABLE `users` (
   `user_id` int(11) NOT NULL AUTO_INCREMENT,
   `full_name` varchar(100) NOT NULL,

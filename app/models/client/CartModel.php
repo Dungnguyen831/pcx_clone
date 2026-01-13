@@ -1,13 +1,16 @@
 <?php
-class CartModel {
+class CartModel
+{
     private $conn;
 
-    public function __construct() {
+    public function __construct()
+    {
         $db = new Database();
         $this->conn = $db->getConnection();
     }
 
-    public function addToCart($user_id, $product_id, $quantity) {
+    public function addToCart($user_id, $product_id, $quantity)
+    {
         // Kiểm tra xem sản phẩm đã có trong giỏ hàng của user này chưa
         $sql = "SELECT cart_id, quantity FROM carts WHERE user_id = :user_id AND product_id = :product_id";
         $stmt = $this->conn->prepare($sql);
@@ -28,52 +31,57 @@ class CartModel {
         }
     }
 
-    public function getCartByUser($user_id) {
+    public function getCartByUser($user_id)
+    {
         if ($this->conn === null) {
             return [];
         }
-    
+
         // Câu lệnh SQL JOIN để lấy stock_quantity từ bảng inventory
         $sql = "SELECT c.*, p.name, p.image, p.price, i.quantity as stock_quantity 
                 FROM carts c
                 JOIN products p ON c.product_id = p.product_id
                 JOIN inventory i ON c.product_id = i.product_id
                 WHERE c.user_id = ?";
-        
+
         $stmt = $this->conn->prepare($sql);
-        
+
         // SỬA LỖI: Thay $stmt.execute thành $stmt->execute
-        $stmt->execute([$user_id]); 
-        
+        $stmt->execute([$user_id]);
+
         // Tương tự, thay $stmt.fetchAll thành $stmt->fetchAll
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function updateQuantity($user_id, $product_id, $quantity) {
+    public function updateQuantity($user_id, $product_id, $quantity)
+    {
         $sql = "UPDATE carts SET quantity = :qty WHERE user_id = :user_id AND product_id = :product_id";
         $stmt = $this->conn->prepare($sql);
         return $stmt->execute([':qty' => $quantity, ':user_id' => $user_id, ':product_id' => $product_id]);
     }
 
-    public function removeFromCart($user_id, $product_id) {
+    public function removeFromCart($user_id, $product_id)
+    {
         $sql = "DELETE FROM carts WHERE user_id = :user_id AND product_id = :product_id";
         $stmt = $this->conn->prepare($sql);
         return $stmt->execute([':user_id' => $user_id, ':product_id' => $product_id]);
     }
-   
 
-    public function getCartCount($user_id) {
+
+    public function getCartCount($user_id)
+    {
         // Sử dụng COUNT để đếm số lượng mã sản phẩm khác nhau
         $sql = "SELECT COUNT(product_id) as total FROM carts WHERE user_id = :user_id";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([':user_id' => $user_id]);
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        return $result['total'] ?? 0; 
+
+        return $result['total'] ?? 0;
     }
 
     // Thêm tham số $user_id vào hàm
-    public function checkCoupon($code, $totalOrderValue, $user_id = 0) {
+    public function checkCoupon($code, $totalOrderValue, $user_id = 0)
+    {
         // 1. Lấy thông tin mã giảm giá (Code cũ giữ nguyên)
         $sql = "SELECT * FROM coupons 
                 WHERE code = :code 
@@ -102,8 +110,8 @@ class CartModel {
             $sqlCheckUser = "SELECT COUNT(*) as used FROM orders 
                             WHERE user_id = :uid 
                             AND coupon_code = :code 
-                            AND status != 4"; // Giả sử -1 là trạng thái Hủy
-            
+                            AND status != 4";
+
             $stmtCheck = $this->conn->prepare($sqlCheckUser);
             $stmtCheck->execute([':uid' => $user_id, ':code' => $code]);
             $history = $stmtCheck->fetch(PDO::FETCH_ASSOC);
