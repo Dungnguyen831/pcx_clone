@@ -137,4 +137,10 @@ class AdminProductModel {
         $stmt->execute([$id]);
         return $stmt->fetchColumn() > 0;
     }
+       public function getAllProducts() {
+            // Code lấy dữ liệu từ database
+            $sql = "SELECT * FROM products";
+            // Giả sử bạn dùng PDO
+            return $this->db->getConnection()->query($sql);
+        }
 }

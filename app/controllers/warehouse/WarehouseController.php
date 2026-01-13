@@ -1,38 +1,31 @@
 <?php
 require_once 'app/models/admin/AdminProductModel.php';
-// Giả sử bạn có WarehouseModel để xử lý database chuyên sâu
 require_once 'app/models/warehouse/WarehouseModel.php'; 
 
 class WarehouseController {
     private $db;
 
     public function __construct() {
-        // Khởi tạo database để dùng cho các câu lệnh SQL
         $this->db = new Database(); 
     }
-  public function index() {
-    // Khởi tạo Model
-    $warehouseModel = new WarehouseModel();
 
-    // Gọi các hàm từ Model để lấy dữ liệu cho 3 trường bạn đang dùng
-    $total_items = $warehouseModel->getTotalProducts();
-    $total_qty = $warehouseModel->getTotalStockQuantity();
-    $low_count = $warehouseModel->getLowStockCount(); // Sửa lỗi Undefined variable tại đây
-    
-    // Lấy hoạt động thực tế cho bảng bên dưới
-    $recent_activities = $warehouseModel->getRecentActivities();
+    public function index() {
+        $warehouseModel = new WarehouseModel();
+        $total_items = $warehouseModel->getTotalProducts();
+        $total_qty = $warehouseModel->getTotalStockQuantity();
+        $low_count = $warehouseModel->getLowStockCount(); 
+        $recent_activities = $warehouseModel->getRecentActivities();
 
-    // Thiết lập hiển thị
-    $page_title = "Bảng quản lí kho";
-    $content_view = 'views/warehouse/index.php';
-    require_once 'views/warehouse/layout/page.php';
-}
+        $page_title = "Bảng quản lí kho";
+        $content_view = 'views/warehouse/index.php';
+        require_once 'views/warehouse/layout/page.php';
+    }
 
-    // 1. MỤC: TIẾN HÀNH NHẬP KHO
+    // 1. MỤC: HIỂN THỊ GIAO DIỆN NHẬP KHO
     public function Import() {
         $productModel = new AdminProductModel();
         $products = $productModel->getAllProducts();
-        
+
         $page_title = "Tiến hành nhập kho";
         $controller = "warehouse"; 
         $action = "Import";
@@ -43,182 +36,148 @@ class WarehouseController {
 
     // 2. MỤC: LỊCH SỬ NHẬP KHO
     public function history() {
-    $warehouseModel = new WarehouseModel();
-    
-    // Lấy từ khóa tìm kiếm từ URL (nếu có)
-    $search = isset($_GET['search']) ? $_GET['search'] : null;
-    
-    // Gọi hàm lấy lịch sử từ Model (có kèm theo từ khóa tìm kiếm)
-    $history = $warehouseModel->getHistory($search);
+        $warehouseModel = new WarehouseModel();
+        $search = isset($_GET['search']) ? $_GET['search'] : null;
+        $history = $warehouseModel->getHistory($search);
 
-    $page_title = "Lịch sử nhập kho";
-    $controller = "warehouse";
-    $action = "History";
-    $content_view = 'views/warehouse/History/History.php';
-    
-    require_once 'views/warehouse/layout/page.php';
+        $page_title = "Lịch sử nhập kho";
+        $controller = "warehouse";
+        $action = "History";
+        $content_view = 'views/warehouse/History/History.php';
+        
+        require_once 'views/warehouse/layout/page.php';
     }
     
     public function getSuggestions() {
-    $query = $_GET['query'] ?? '';
-    $model = new WarehouseModel();
-    // Lấy dữ liệu từ hàm getHistory đã sửa ở trên
-    $data = $model->getHistory($query);
-    
-    // Trích xuất tên sản phẩm và xóa trùng lặp
-    $names = array_values(array_unique(array_column($data, 'product_name')));
-    
-    header('Content-Type: application/json');
-    echo json_encode($names);
-    exit;
+        $query = $_GET['query'] ?? '';
+        $model = new WarehouseModel();
+        $data = $model->getHistory($query);
+        $names = array_values(array_unique(array_column($data, 'product_name')));
+        
+        header('Content-Type: application/json');
+        echo json_encode($names);
+        exit;
     }
 
-    // 3. MỤC: QUẢN LÝ KHO (TỒN KHO)
+    // 3. MỤC: QUẢN LÝ TỒN KHO
     public function inventory() {
-    // Câu lệnh SQL JOIN để lấy tên từ bảng products và số lượng từ bảng inventory
-    $sql = "SELECT p.product_id, p.name, p.image, i.quantity, i.last_updated 
-            FROM products p 
-            JOIN inventory i ON p.product_id = i.product_id 
-            ORDER BY i.last_updated DESC";
-    
-    $products = $this->db->fetchAll($sql);
+        $sql = "SELECT p.product_id, p.name, p.image, i.quantity, i.last_updated 
+                FROM products p 
+                JOIN inventory i ON p.product_id = i.product_id 
+                ORDER BY i.last_updated DESC";
+        
+        $products = $this->db->fetchAll($sql);
+        $page_title = "Quản lý tồn kho";
+        $controller = "warehouse";
+        $action = "Inventory";
+        $content_view = 'views/warehouse/Inventory/inventory.php';
+        
+        require_once 'views/warehouse/layout/page.php';
+    }
 
-    $page_title = "Quản lý tồn kho";
-    $controller = "warehouse";
-    $action = "Inventory";
-    
-    // Lưu ý: Sửa đúng đường dẫn file (xóa dấu // và kiểm tra chữ i thường)
-    $content_view = 'views/warehouse/Inventory/inventory.php';
-    
-    require_once 'views/warehouse/layout/page.php';
-}
+    // 4. XỬ LÝ NHẬP LẺ THỦ CÔNG (Quan trọng: Phải có hàm này)
+    public function processImport() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $product_id = $_POST['product_id'];
+            $quantity   = (int)$_POST['quantity'];
+            $price      = (float)$_POST['price'];
+            $note       = $_POST['note'] ?? 'Nhập hàng mới';
+            $user_id    = $_SESSION['user_id'] ?? 1; 
 
-     public function processImport() {
-    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-        // 1. Lấy dữ liệu từ FORM
-        $product_id = $_POST['product_id'];
-        $quantity   = (int)$_POST['quantity'];
-        $price =  (float)$_POST['price'];
-        $note       = isset($_POST['note']) ? $_POST['note'] : 'Nhập hàng mới';
-        $user_id    = $_SESSION['user_id'] ?? 1; 
+            try {
+                // Tạo phiếu nhập
+                $sql_import = "INSERT INTO imports (user_id, note, created_at) VALUES ($user_id, '$note', NOW())";
+                $this->db->execute($sql_import);
 
-        try {
-            // 2. Bước 1: Lưu vào bảng 'imports' (Bảng cha)
-            $sql_import = "INSERT INTO imports (user_id, note, created_at) 
-                           VALUES ($user_id, '$note', NOW())";
-            $this->db->execute($sql_import);
+                $res = $this->db->fetchAll("SELECT import_id FROM imports ORDER BY import_id DESC LIMIT 1");
+                $import_id = $res[0]['import_id'];
 
-            // 3. THAY THẾ CÁCH LẤY ID: Truy vấn ID lớn nhất vừa tạo của user này
-            // Cách này khắc phục triệt để lỗi "Không thể tạo ID" dù đã tích A_I
-            $sql_get_id = "SELECT import_id FROM imports 
-                           WHERE user_id = $user_id 
-                           ORDER BY import_id DESC LIMIT 1";
-            $result = $this->db->fetchAll($sql_get_id);
-            $import_id = $result[0]['import_id'] ?? 0;
+                // Lưu chi tiết & Cập nhật kho
+                $this->db->execute("INSERT INTO import_details (import_id, product_id, quantity, import_price) VALUES ($import_id, $product_id, $quantity, $price)");
+                $this->db->execute("UPDATE inventory SET quantity = quantity + $quantity WHERE product_id = $product_id");
 
-            // 4. Kiểm tra ID để tránh lỗi Foreign Key
-            if ($import_id == 0) {
-                die("Lỗi: Hệ thống không tìm thấy phiếu nhập vừa tạo. Vui lòng kiểm tra lại bảng imports.");
+                header("Location: index.php?controller=warehouse&action=history&message=success");
+                exit();
+            } catch (Exception $e) {
+                die("Lỗi: " . $e->getMessage());
             }
+        }
+    }
 
-            // 5. Bước 2: Lưu vào bảng 'import_details' (Bảng con)
-            $sql_detail = "INSERT INTO import_details (import_id, product_id, quantity, import_price) 
-                           VALUES ($import_id, $product_id, $quantity,$price)";
-            $this->db->execute($sql_detail);
+    // 5. XỬ LÝ NHẬP EXCEL
+    public function processExcelImport() {
+    $libPath = $_SERVER['DOCUMENT_ROOT'] . '/Btaplonweb/pcx_clone/app/libs/SimpleXLSX.php';
+    if (!file_exists($libPath)) {
+        die("Không tìm thấy thư viện SimpleXLSX tại: " . $libPath);
+    }
+    require_once $libPath;
 
-            // 6. Bước 3: Cập nhật số lượng trong bảng 'products'
-            $sql_update = "UPDATE inventory SET quantity = quantity + $quantity 
-                           WHERE product_id = $product_id";
-            $this->db->execute($sql_update);
+    if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['excel_file'])) {
+        if ($xlsx = \Shuchkin\SimpleXLSX::parse($_FILES['excel_file']['tmp_name'])) {
+            $rows = $xlsx->rows();
+            $user_id = $_SESSION['user_id'] ?? 1;
 
-            // 7. Thành công: Chuyển hướng về trang lịch sử
-            // Đường dẫn action=history sẽ gọi hàm history() trỏ vào views/warehouse/History/History.php
-            header("Location: index.php?controller=warehouse&action=history&message=success");
-            exit();
+            foreach ($rows as $index => $row) {
+                if ($index == 0 || empty($row[0])) continue; 
+                
+                // 1. LẤY TÊN SẢN PHẨM TỪ CỘT A
+                $product_name = addslashes($row[0]); 
+                $quantity     = (int)($row[1] ?? 0);
+                $price        = (float)($row[2] ?? 0);
 
-        } catch (Exception $e) {
-            die("Lỗi xử lý kho: " . $e->getMessage());
+                // 2. TÌM ID DỰA TRÊN TÊN (QUAN TRỌNG)
+                // Phải dùng dấu nháy đơn '$product_name' để tránh lỗi Unknown Column Airport
+                $sql_check = "SELECT product_id FROM products WHERE name = '$product_name' LIMIT 1";
+                $res_check = $this->db->fetchAll($sql_check);
+
+                if (!empty($res_check)) {
+                    $product_id = $res_check[0]['product_id'];
+
+                    // 3. TIẾN HÀNH LƯU VÀO DATABASE DÙNG PRODUCT_ID VỪA TÌM ĐƯỢC
+                    // Bước 3.1: Tạo phiếu nhập
+                    $this->db->execute("INSERT INTO imports (user_id, note, created_at) VALUES ($user_id, 'Nhập từ Excel', NOW())");
+                    
+                    $res_import = $this->db->fetchAll("SELECT import_id FROM imports ORDER BY import_id DESC LIMIT 1");
+                    $import_id = $res_import[0]['import_id'];
+
+                    // Bước 3.2: Lưu chi tiết phiếu
+                    $this->db->execute("INSERT INTO import_details (import_id, product_id, quantity, import_price) VALUES ($import_id, $product_id, $quantity, $price)");
+
+                    // Bước 3.3: Cập nhật tồn kho
+                    $this->db->execute("UPDATE inventory SET quantity = quantity + $quantity WHERE product_id = $product_id");
+                } else {
+                    // Nếu không tìm thấy tên này trong DB, có thể bỏ qua hoặc báo lỗi
+                    // echo "Không tìm thấy sản phẩm: " . $product_name;
+                    continue;
+                }
+            }
+             header("Location: index.php?controller=warehouse&action=history&message=excel_success");
+             exit();
+        } else {
+            die("Lỗi đọc Excel: " . \Shuchkin\SimpleXLSX::parseError());
         }
     }
 }
-    /** XUẤT EXCEL LỊCH SỬ NHẬP KHO */
-public function exportHistoryExcel() 
-{
-    // 1. Lấy dữ liệu từ Model (bao gồm cả tìm kiếm nếu có)
-    $searchTerm = $_GET['search'] ?? null;
-    $model = new WarehouseModel();
-    $history = $model->getHistory($searchTerm); // Đảm bảo hàm này lấy đúng import_price
+    // 6. XUẤT FILE EXCEL LỊCH SỬ
+    public function exportHistoryExcel() {
+        $searchTerm = $_GET['search'] ?? null;
+        $model = new WarehouseModel();
+        $history = $model->getHistory($searchTerm);
 
-    $filename = "LichSu_NhapKho_" . date('d-m-Y') . ".xls";
+        $filename = "LichSu_NhapKho_" . date('d-m-Y') . ".xls";
+        header("Content-Type: application/vnd.ms-excel; charset=utf-8");
+        header("Content-Disposition: attachment; filename=\"$filename\"");
 
-    // 2. Định nghĩa CSS cho file Excel
-    $style = "
-    <style>
-        .excel-table { font-family: 'Arial', sans-serif; border-collapse: collapse; width: 100%; }
-        .excel-table th { 
-            background-color: #27ae60; color: #ffffff; font-weight: bold; 
-            border: 0.5pt solid #000000; text-align: center; height: 35px; font-size: 11pt;
-        }
-        .excel-table td { 
-            border: 0.5pt solid #000000; padding: 8px; vertical-align: middle; font-size: 10pt; 
-        }
-        .text-center { text-align: center; }
-        .text-right { text-align: right; }
-        .title-doc { font-size: 16pt; font-weight: bold; text-align: center; color: #27ae60; }
-    </style>";
-
-    // 3. Thiết lập Header để trình duyệt hiểu là file Excel
-    header("Content-Type: application/vnd.ms-excel; charset=utf-8");
-    header("Content-Disposition: attachment; filename=\"$filename\"");
-
-    echo '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">';
-    echo '<head><meta http-equiv="content-type" content="application/vnd.ms-excel; charset=UTF-8">' . $style . '</head>';
-    echo '<body>';
-    
-    echo '<div class="title-doc">NHẬT KÝ NHẬP KHO PCX ADMIN</div>';
-    echo '<div style="text-align: center; margin-bottom: 20px;">Ngày xuất báo cáo: ' . date('d/m/Y H:i') . '</div><br>';
-
-    echo '<table class="excel-table" border="1">';
-    echo '<thead>
-            <tr>
-                <th style="width: 120pt;">Ngày thực hiện</th>
-                <th style="width: 250pt;">Tên sản phẩm</th>
-                <th style="width: 80pt;">Số lượng</th>
-                <th style="width: 100pt;">Giá nhập</th>
-                <th style="width: 120pt;">Thành tiền</th>
-                <th style="width: 200pt;">Ghi chú</th>
-            </tr>
-          </thead><tbody>';
-
-    if (!empty($history)) {
-        $grandTotal = 0;
+        $style = "<style>.excel-table { font-family: Arial; border-collapse: collapse; width: 100%; } .excel-table th { background: #27ae60; color: white; border: 1px solid black; } .excel-table td { border: 1px solid black; }</style>";
+        
+        echo "<html><head><meta charset='UTF-8'>$style</head><body>";
+        echo "<h2>NHẬT KÝ NHẬP KHO</h2><table class='excel-table'><thead><tr><th>Ngày</th><th>Sản phẩm</th><th>SL</th><th>Giá</th><th>Thành tiền</th></tr></thead><tbody>";
+        
         foreach ($history as $h) {
-            // Sử dụng import_price và total_price từ database
-            $price = $h['import_price'] ?? 0;
-            $total = $h['total_price'] ?? ($price * $h['quantity']);
-            $grandTotal += $total;
-
-            echo '<tr>
-                <td class="text-center">' . date('d/m/Y H:i', strtotime($h['created_at'])) . '</td>
-                <td>' . htmlspecialchars($h['product_name']) . '</td>
-                <td class="text-center">' . $h['quantity'] . '</td>
-                <td class="text-right">' . number_format($price, 0, ',', '.') . '</td>
-                <td class="text-right">' . number_format($total, 0, ',', '.') . '</td>
-                <td>' . htmlspecialchars($h['note'] ?? 'Nhập hàng mới') . '</td>
-            </tr>';
+            $total = ($h['import_price'] ?? 0) * $h['quantity'];
+            echo "<tr><td>{$h['created_at']}</td><td>{$h['product_name']}</td><td>{$h['quantity']}</td><td>{$h['import_price']}</td><td>$total</td></tr>";
         }
-        // Thêm dòng tổng cộng cuối bảng
-        echo '<tr>
-            <td colspan="4" style="text-align:right; font-weight:bold; background:#f9f9f9;">TỔNG GIÁ TRỊ NHẬP:</td>
-            <td class="text-right" style="font-weight:bold; background:#f9f9f9;">' . number_format($grandTotal, 0, ',', '.') . ' VNĐ</td>
-            <td style="background:#f9f9f9;"></td>
-        </tr>';
-    } else {
-        echo '<tr><td colspan="6" style="text-align:center;">Không có dữ liệu nhập kho.</td></tr>';
+        echo "</tbody></table></body></html>";
+        exit();
     }
-
-    echo '</tbody></table></body></html>';
-    exit;
-}
-    
-}
+} // Kết thúc Class

@@ -49,6 +49,7 @@ class WarehouseModel {
         // Đảm bảo KHÔNG có dấu cách sau dấu % đầu tiên
         $sql .= " WHERE p.name LIKE '%$safeSearch%'"; 
     }
+    
 
     $sql .= " ORDER BY i.created_at DESC";
     return $this->db->fetchAll($sql);
