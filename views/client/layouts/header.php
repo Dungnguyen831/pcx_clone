@@ -29,10 +29,39 @@ else if (isset($_SESSION['cart'])) {
 
 <body>
 
-    <header>
-        <div class="container header-flex">
-            <a href="index.php" class="logo">
-                <i class="fa-solid fa-layer-group"></i> PCX Clone
+<header>
+    <div class="container header-flex">
+        <a href="index.php" class="logo">
+            <i class="fa-solid fa-layer-group"></i> PCX Clone
+        </a>
+
+        <nav>
+            <ul class="main-menu">
+                <li><a href="index.php">Trang chủ</a></li>
+                <li><a href="index.php?controller=home&action=listproduct">Sản phẩm</a></li>
+                <li><a href="index.php?controller=order&action=index">Đơn hàng</a></li>
+                <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] == 2): ?>
+                <li>
+                    <a href="index.php?controller=warehouse" style="color: black;">
+                QUẢN LÝ KHO
+                    </a>
+                </li>
+                <?php endif; ?>
+            </ul>
+        </nav>
+
+        <div class="header-icons">
+            <?php if (isset($_SESSION['user_id'])): ?>
+                <a href="index.php?controller=auth&action=profile"><i class="fa-solid fa-user-check"></i></a>
+            <?php else: ?>
+                <a href="index.php?controller=auth&action=login"><i class="fa-regular fa-user"></i></a>
+            <?php endif; ?>
+
+            <a href="index.php?controller=cart&action=index">
+                <i class="fa-solid fa-cart-shopping"></i>
+                <span id="cart-count" style="color: red; font-weight: bold;">
+                    (<?php echo $display_count; ?>)
+                </span>
             </a>
 
             <nav>

@@ -12,14 +12,14 @@ if (!isset($errors)) $errors = [];
 ?>
 
 <div class="coupon-container">
-    <div class="coupon-header">
+<div class="coupon-header">
         <h2><i class="fa-solid fa-ticket" style="color: #3498db;"></i> <?= $isEdit ? 'Chỉnh sửa mã giảm giá' : 'Quản lý mã giảm giá' ?></h2>
         <?php if ($isEdit || (!empty($formData) && empty($formData['coupon_id']))): ?>
             <a href="index.php?controller=admin-coupon" class="btn btn-secondary"><i class="fa-solid fa-xmark"></i> Hủy bỏ / Thêm mới</a>
         <?php endif; ?>
     </div>
 
-    <div class="coupon-card <?= $isEdit ? 'edit-mode' : '' ?>">
+<div class="coupon-card <?= $isEdit ? 'edit-mode' : '' ?>">
         <form action="index.php?controller=admin-coupon&action=store" method="POST" class="coupon-form">
             <?php if ($isEdit): ?><input type="hidden" name="id" value="<?= $formData['coupon_id'] ?>"><?php endif; ?>
             <input type="hidden" name="current_search" value="<?= htmlspecialchars($keyword) ?>">
@@ -45,7 +45,7 @@ if (!isset($errors)) $errors = [];
                         <option value="percent" <?= ($formData['discount_type'] ?? '') == 'percent' ? 'selected' : '' ?>>Phần trăm (%)</option>
                     </select>
                 <?php endif; ?>
-            </div>
+</div>
 
             <div class="form-group">
                 <label>Giá trị giảm <span style="color:red">*</span></label>
@@ -54,7 +54,7 @@ if (!isset($errors)) $errors = [];
                 <?php if (isset($errors['discount_value'])): ?><div class="invalid-feedback"><?= $errors['discount_value'] ?></div><?php endif; ?>
             </div>
 
-            <div class="form-group">
+<div class="form-group">
                 <label>Đơn tối thiểu</label>
                 <input type="number" name="min_order_value" class="form-control <?= isset($errors['min_order_value']) ? 'is-invalid' : '' ?> <?= $isEdit ? 'readonly-field' : '' ?>"
                     value="<?= $formData['min_order_value'] ?? '0' ?>" <?= $isEdit ? 'readonly' : '' ?>>
@@ -140,10 +140,10 @@ if (!isset($errors)) $errors = [];
         </form>
     </div>
 
-    <div class="coupon-table-wrapper">
-        <table class="coupon-table">
-            <thead>
-                <tr>
+<div class="coupon-table-wrapper">
+<table class="coupon-table">
+<thead>
+<tr>
                     <th>Mã Code</th>
                     <th>Giá trị giảm</th>
                     <th style="text-align: center;">Điểm đổi</th>
@@ -151,10 +151,10 @@ if (!isset($errors)) $errors = [];
                     <th>Hạn sử dụng</th>
                     <th>Trạng thái</th>
                     <th style="text-align:center;">Thao tác</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (!empty($coupons)): foreach ($coupons as $c): ?>
+</tr>
+</thead>
+<tbody>
+<?php if (!empty($coupons)): foreach ($coupons as $c): ?>
                         <tr>
                             <td><span class="coupon-code-badge"><?= $c['code'] ?></span></td>
                             <td style="font-weight: 600;"><?= number_format($c['discount_value']) ?><?= $c['discount_type'] == 'fixed' ? 'đ' : '%' ?></td>
@@ -187,8 +187,8 @@ if (!isset($errors)) $errors = [];
                                     <a href="index.php?controller=admin-coupon&action=edit&id=<?= $c['coupon_id'] ?>&keyword=<?= urlencode($keyword) ?>" class="btn btn-secondary" style="padding: 5px 10px; height: 30px; background:#e0f2fe; color:#0369a1;" title="Sửa"><i class="fa-solid fa-pen-to-square" style="margin:0"></i></a>
                                     <a href="index.php?controller=admin-coupon&action=delete&id=<?= $c['coupon_id'] ?>&keyword=<?= urlencode($keyword) ?>" onclick="return confirm('Xóa mã này?')" class="btn btn-secondary" style="padding: 5px 10px; height: 30px; background:#fee2e2; color:#b91c1c;" title="Xóa"><i class="fa-solid fa-trash-can" style="margin:0"></i></a>
                                 </div>
-                            </td>
-                        </tr>
+    </td>
+</tr>
                     <?php endforeach;
                 else: ?>
                     <tr>

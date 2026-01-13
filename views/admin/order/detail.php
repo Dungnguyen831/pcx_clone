@@ -78,6 +78,16 @@ $curr_status = $status_map[$order['status']];
                             <th style="padding: 12px; text-align: center; font-size: 13px; color: #64748b;">SL</th>
                             <th style="padding: 12px; text-align: right; font-size: 13px; color: #64748b;">Thành tiền</th>
                         </tr>
+<<<<<<< HEAD
+                    <?php endif; ?>
+                </tbody>
+            </table>
+
+            <?php if ($order['status'] == 0): ?>
+                <div style="margin-top: 30px; display: flex; gap: 10px; justify-content: flex-end;">
+                    <a href="index.php?controller=admin-order&action=updateStatus&id=<?= $order['order_id'] ?>&status=1" class="btn btn-primary" style="padding: 12px 25px;">Xác nhận đơn hàng</a>
+                    <a href="index.php?controller=admin-order&action=updateStatus&id=<?= $order['order_id'] ?>&status=4" class="btn" style="background: #ef4444; color: #fff; padding: 12px 25px;" onclick="return confirm('Bạn chắc chắn muốn hủy đơn này?')">Hủy đơn</a>
+=======
                     </thead>
                     <tbody>
                         <?php foreach ($items as $item): ?>
@@ -111,6 +121,7 @@ $curr_status = $status_map[$order['status']];
                        style="background: #2ecc71; color: #fff; padding: 12px 25px; border-radius: 6px; text-decoration: none; font-weight: 700; font-size: 14px; box-shadow: 0 4px 12px rgba(46, 204, 113, 0.2);">
                        <i class="fa-solid fa-check"></i> XÁC NHẬN ĐƠN HÀNG
                     </a>
+>>>>>>> bf4fcde2f382594b574a4c7faf912b8fe451ff37
                 </div>
             <?php endif; ?>
         </div>

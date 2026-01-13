@@ -3,10 +3,12 @@ require_once 'app/config/database.php';
 
 class AdminProductModel {
     private $conn;
+    private $db;
 
     public function __construct() {
         $db = new Database();
         $this->conn = $db->getConnection();
+        $this->db = new Database();
     }
 
     // Fix hàm lấy sản phẩm Admin: Sử dụng LEFT JOIN để luôn hiện sản phẩm dù kho lỗi
@@ -135,4 +137,10 @@ class AdminProductModel {
         $stmt->execute([$id]);
         return $stmt->fetchColumn() > 0;
     }
+       public function getAllProducts() {
+            // Code lấy dữ liệu từ database
+            $sql = "SELECT * FROM products";
+            // Giả sử bạn dùng PDO
+            return $this->db->getConnection()->query($sql);
+        }
 }

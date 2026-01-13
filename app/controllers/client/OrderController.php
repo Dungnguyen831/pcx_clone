@@ -23,16 +23,21 @@ class OrderController
         require_once 'views/client/orders/index.php';
     }
 
-    // Chi tiết đơn hàng
-    public function detail()
-    {
-        $order_id = $_GET['id'] ?? 0;
-
-        $order = $this->orderModel->getOrderById($order_id);
-        $items = $this->orderModel->getOrderItems($order_id);
-
-        require_once 'views/client/orders/detail.php';
+    public function detail() {
+    $id = $_GET['id'] ?? 0;
+    
+    // 1. Lấy thông tin đơn hàng
+    $order = $this->orderModel->getOrderById($id);
+    
+    // 2. Lấy danh sách sản phẩm (BẮT BUỘC PHẢI CÓ DÒNG NÀY)
+    $items = $this->orderModel->getOrderItems($id);
+    
+    if (!$order) {
+        die("Đơn hàng không tồn tại!");
     }
+
+    require_once 'views/client/orders/detail.php'; // Đường dẫn tới file view của bạn
+}
 
     // Hủy đơn
     public function cancel()
