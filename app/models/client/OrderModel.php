@@ -1,30 +1,37 @@
 <?php
-class OrderModel {
+class OrderModel
+{
     private $db;
 
-    public function __construct() {
-        // Khởi tạo kết nối giống các Model khác của bạn
-        $database = new Database();
-        $this->db = $database->getConnection();
+    public function __construct($pdo = null)
+    {
+        if ($pdo) {
+            $this->db = $pdo;
+        } else {
+            // Fallback nếu không truyền pdo
+            $database = new Database();
+            $this->db = $database->getConnection();
+        }
     }
 
-    // Lấy danh sách đơn hàng của một người dùng
-    public function getOrdersByUser($user_id) {
+    // --- GIỮ NGUYÊN LOGIC CŨ ---
+    public function getOrdersByUser($user_id)
+    {
         $sql = "SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$user_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Lấy thông tin tổng quát của 1 đơn hàng
-    public function getOrderById($id) {
+    public function getOrderById($id)
+    {
         $stmt = $this->db->prepare("SELECT * FROM orders WHERE order_id = ?");
         $stmt->execute([$id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    // Lấy chi tiết các sản phẩm trong đơn hàng (JOIN với bảng products để lấy ảnh và tên)
-    public function getOrderItems($order_id) {
+    public function getOrderItems($order_id)
+    {
         $sql = "SELECT od.*, p.name, p.image
                 FROM order_details od
                 JOIN products p ON od.product_id = p.product_id
@@ -34,143 +41,118 @@ class OrderModel {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Logic tạo đơn hàng mới (Đã sửa theo cấu trúc bảng của bạn)
-    // public function createOrder($user_id, $data, $cart_items) {
-    //     try {
-    //         $this->db->beginTransaction();
+    // --- SỬA LẠI ĐỂ KHÔNG BỊ LỖI SQL & THÊM LOGIC MỚI ---
+    public function createOrder($user_id, $data, $cart_items)
+    {
+        try {
+            $this->db->beginTransaction();
 
-    //         // 1. Lưu vào bảng orders
-    //         $sqlOrder = "INSERT INTO orders (user_id, customer_name, customer_phone, shipping_address, note, total_money, final_money, status, created_at) 
-    //                      VALUES (:uid, :name, :phone, :address, :note, :total, :final, 0, NOW())";
-    //         $stmtOrder = $this->db->prepare($sqlOrder);
-    //         $stmtOrder->execute([
-    //             ':uid'      => $user_id,
-    //             ':name'     => $data['customer_name'],
-    //             ':phone'    => $data['customer_phone'],
-    //             ':address'  => $data['shipping_address'],
-    //             ':note'     => $data['note'],
-    //             ':total'    => $data['total_money'],
-    //             ':final'    => $data['total_money']
-    //         ]);
-            
-    //         $order_id = $this->db->lastInsertId();
+            // 1. Insert bảng orders
+            $sqlOrder = "INSERT INTO orders (
+                            user_id, customer_name, customer_phone, shipping_address, note, 
+                            total_money, discount_amount, final_money, coupon_code, 
+                            payment_method, status, created_at
+                        ) VALUES (
+                            :uid, :name, :phone, :address, :note, 
+                            :total, :discount, :final, :code, :method, 
+                            0, NOW()
+                        )";
 
-    //         // 2. Lưu vào bảng order_details và TRỪ KHO
-    //         foreach ($cart_items as $item) {
-    //             $total_price = $item['price'] * $item['quantity'];
-                
-    //             // Lưu chi tiết
-    //             $sqlDetail = "INSERT INTO order_details (order_id, product_id, price, quantity, total_price) 
-    //                           VALUES (:oid, :pid, :price, :qty, :tprice)";
-    //             $stmtDetail = $this->db->prepare($sqlDetail);
-    //             $stmtDetail->execute([
-    //                 ':oid'    => $order_id,
-    //                 ':pid'    => $item['product_id'],
-    //                 ':price'  => $item['price'],
-    //                 ':qty'    => $item['quantity'],
-    //                 ':tprice' => $total_price
-    //             ]);
-
-    //             // Trừ kho (Bảng inventory)
-    //             $sqlInv = "UPDATE inventory SET quantity = quantity - ? WHERE product_id = ?";
-    //             $this->db->prepare($sqlInv)->execute([$item['quantity'], $item['product_id']]);
-    //         }
-
-    //         // 3. Xóa giỏ hàng database
-    //         $sqlClear = "DELETE FROM carts WHERE user_id = ?";
-    //         $this->db->prepare($sqlClear)->execute([$user_id]);
-
-    //         $this->db->commit();
-    //         return $order_id;
-    //     } catch (Exception $e) {
-    //         $this->db->rollBack();
-    //         return false;
-    //     }
-    // }
-
-    public function createOrder($user_id, $data, $cart_items) {
-    try {
-        $this->db->beginTransaction();
-
-        // =================================================================
-        // 1. SỬA: Cập nhật câu SQL để lưu thêm Discount, Coupon, Final Money
-        // =================================================================
-        $sqlOrder = "INSERT INTO orders (
-                        user_id, 
-                        customer_name, 
-                        customer_phone, 
-                        shipping_address, 
-                        note, 
-                        total_money, 
-                        discount_amount,  /* Mới */
-                        final_money,      /* Mới */
-                        coupon_code,      /* Mới */
-                        payment_method,   /* Mới (Nếu bảng DB có cột này) */
-                        status, 
-                        created_at
-                    ) VALUES (
-                        :uid, :name, :phone, :address, :note, 
-                        :total, :discount, :final, :code, :method, 
-                        0, NOW()
-                    )";
-        
-        $stmtOrder = $this->db->prepare($sqlOrder);
-        $stmtOrder->execute([
-            ':uid'      => $user_id,
-            ':name'     => $data['customer_name'],
-            ':phone'    => $data['customer_phone'],
-            ':address'  => $data['shipping_address'],
-            ':note'     => $data['note'],
-            ':total'    => $data['total_money'],     // Tổng tiền gốc
-            ':discount' => $data['discount_amount'], // Tiền giảm (Lấy từ Controller gửi sang)
-            ':final'    => $data['final_money'],     // Tiền khách phải trả (Controller đã tính)
-            ':code'     => $data['coupon_code'],     // Mã voucher
-            ':method'   => $data['payment_method'] ?? 'COD' // Mặc định COD nếu không có
-        ]);
-        
-        $order_id = $this->db->lastInsertId();
-
-        // =================================================================
-        // 2. GIỮ NGUYÊN: Logic lưu chi tiết và TRỪ KHO
-        // =================================================================
-        foreach ($cart_items as $item) {
-            // An toàn: Làm sạch giá tiền trước khi nhân (tránh lỗi 3.200.000 * số lượng)
-            $price_clean = preg_replace('/[^0-9]/', '', $item['price']);
-            $total_price = $price_clean * $item['quantity'];
-            
-            // Lưu chi tiết (Giữ nguyên logic của bạn)
-            $sqlDetail = "INSERT INTO order_details (order_id, product_id, price, quantity, total_price) 
-                          VALUES (:oid, :pid, :price, :qty, :tprice)";
-            $stmtDetail = $this->db->prepare($sqlDetail);
-            $stmtDetail->execute([
-                ':oid'    => $order_id,
-                ':pid'    => $item['product_id'],
-                ':price'  => $price_clean, // Lưu giá sạch
-                ':qty'    => $item['quantity'],
-                ':tprice' => $total_price
+            $stmtOrder = $this->db->prepare($sqlOrder);
+            $stmtOrder->execute([
+                ':uid'      => $user_id,
+                ':name'     => $data['customer_name'],
+                ':phone'    => $data['customer_phone'],
+                ':address'  => $data['shipping_address'],
+                ':note'     => $data['note'],
+                ':total'    => $data['total_money'],
+                ':discount' => $data['discount_amount'],
+                ':final'    => $data['final_money'],
+                ':code'     => $data['coupon_code'],
+                ':method'   => $data['payment_method'] ?? 'COD'
             ]);
 
-            // Trừ kho (Giữ nguyên logic của bạn)
+            $order_id = $this->db->lastInsertId();
+
+            // 2. Insert chi tiết & Trừ kho
+            // QUAN TRỌNG: Đã bỏ cột total_price ra khỏi câu lệnh INSERT để tránh lỗi
+            $sqlDetail = "INSERT INTO order_details (order_id, product_id, price, quantity) 
+                          VALUES (:oid, :pid, :price, :qty)";
+            $stmtDetail = $this->db->prepare($sqlDetail);
+
             $sqlInv = "UPDATE inventory SET quantity = quantity - ? WHERE product_id = ?";
-            $this->db->prepare($sqlInv)->execute([$item['quantity'], $item['product_id']]);
+            $stmtInv = $this->db->prepare($sqlInv);
+
+            foreach ($cart_items as $item) {
+                // Làm sạch giá tiền
+                $price_clean = preg_replace('/[^0-9]/', '', $item['price']);
+
+                $stmtDetail->execute([
+                    ':oid'    => $order_id,
+                    ':pid'    => $item['product_id'],
+                    ':price'  => $price_clean,
+                    ':qty'    => $item['quantity']
+                ]);
+
+                // Trừ kho
+                $stmtInv->execute([$item['quantity'], $item['product_id']]);
+            }
+
+            // 3. Cập nhật Coupon (Nếu có dùng)
+            if (!empty($data['coupon_code'])) {
+                $sqlCoupon = "UPDATE coupons SET used_count = used_count + 1 WHERE code = ?";
+                $this->db->prepare($sqlCoupon)->execute([$data['coupon_code']]);
+            }
+
+            // 4. Xóa giỏ hàng
+            $sqlClear = "DELETE FROM carts WHERE user_id = ?";
+            $this->db->prepare($sqlClear)->execute([$user_id]);
+
+            $this->db->commit();
+            return $order_id;
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            return false;
         }
+    }
 
-        // =================================================================
-        // 3. GIỮ NGUYÊN: Xóa giỏ hàng database
-        // =================================================================
-        $sqlClear = "DELETE FROM carts WHERE user_id = ?";
-        $this->db->prepare($sqlClear)->execute([$user_id]);
+    // --- SỬA LẠI ĐỂ HOÀN KHO KHI HỦY ---
+    public function cancelOrder($order_id)
+    {
+        try {
+            $this->db->beginTransaction();
 
-        $this->db->commit();
-        return $order_id;
+            $order = $this->getOrderById($order_id);
+            $items = $this->getOrderItems($order_id);
 
-    } catch (Exception $e) {
-        $this->db->rollBack();
-        // Ghi log lỗi để debug nếu cần
-        // error_log($e->getMessage()); 
-        return false;
+            if (!$order) throw new Exception("Order not found");
+
+            // Cập nhật trạng thái Hủy (4)
+            $sqlUpdate = "UPDATE orders SET status = 4 WHERE order_id = ?";
+            $this->db->prepare($sqlUpdate)->execute([$order_id]);
+
+            // BỔ SUNG: Hoàn lại kho
+            $sqlRestoreInv = "UPDATE inventory SET quantity = quantity + ? WHERE product_id = ?";
+            $stmtRestore = $this->db->prepare($sqlRestoreInv);
+            foreach ($items as $item) {
+                $stmtRestore->execute([$item['quantity'], $item['product_id']]);
+            }
+
+            // BỔ SUNG: Hoàn lại mã giảm giá
+            if (!empty($order['coupon_code'])) {
+                $sqlRestoreCoupon = "UPDATE coupons SET used_count = used_count - 1 WHERE code = ? AND used_count > 0";
+                $this->db->prepare($sqlRestoreCoupon)->execute([$order['coupon_code']]);
+            }
+
+            $this->db->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            return false;
+        }
     }
 }
+<<<<<<< HEAD
 
     // Hủy đơn (Trạng thái 4) + Hoàn lại số lượng vào kho
     public function cancelOrder($order_id) {
@@ -200,3 +182,5 @@ class OrderModel {
         }
     }
 }
+=======
+>>>>>>> 8b19780d1080dd98825d861c3ac2f9c96ae89e6c
