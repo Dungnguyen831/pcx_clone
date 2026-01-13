@@ -152,7 +152,6 @@ class OrderModel
         }
     }
 }
-<<<<<<< HEAD
 
     // Hủy đơn (Trạng thái 4) + Hoàn lại số lượng vào kho
     public function cancelOrder($order_id) {
@@ -182,5 +181,3 @@ class OrderModel
         }
     }
 }
-=======
->>>>>>> 8b19780d1080dd98825d861c3ac2f9c96ae89e6c

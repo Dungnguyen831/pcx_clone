@@ -110,13 +110,8 @@ class CartModel
             $sqlCheckUser = "SELECT COUNT(*) as used FROM orders 
                             WHERE user_id = :uid 
                             AND coupon_code = :code 
-<<<<<<< HEAD
-                            AND status != 4"; // Giả sử -1 là trạng thái Hủy
-            
-=======
                             AND status != 4";
 
->>>>>>> 8b19780d1080dd98825d861c3ac2f9c96ae89e6c
             $stmtCheck = $this->conn->prepare($sqlCheckUser);
             $stmtCheck->execute([':uid' => $user_id, ':code' => $code]);
             $history = $stmtCheck->fetch(PDO::FETCH_ASSOC);
