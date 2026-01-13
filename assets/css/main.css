@@ -545,6 +545,18 @@ footer {
     color: var(--primary-color);
 }
 
+/* Nút ĐÃ NHẬN */
+.btn-received {
+    background: #2ecc71;
+    color: #fff;
+    border: 1px solid #2ecc71;
+}
+
+.btn-received:hover {
+    background: #27ae60;
+    border-color: #27ae60;
+    color: #fff;
+}
 
 /* Responsive mobile */
 @media (max-width: 768px) {
@@ -698,16 +710,5 @@ footer {
     transform: scale(1.2);
 }
 
-/* Nút ĐÃ NHẬN */
-.btn-received {
-    background: #2ecc71;
-    color: #fff;
-    border: 1px solid #2ecc71;
-}
 
-.btn-received:hover {
-    background: #27ae60;
-    border-color: #27ae60;
-    color: #fff;
-}
 
