@@ -108,7 +108,7 @@ class WarehouseController {
     public function processExcelImport() {
     $libPath = $_SERVER['DOCUMENT_ROOT'] . '/Btaplonweb/pcx_clone/app/libs/SimpleXLSX.php';
     if (!file_exists($libPath)) {
-        die("Không tìm thấy thư viện SimpleXLSX tại: " . $libPath);
+        die("Không tìm thấy thư viện SimpleXLSX");
     }
     require_once $libPath;
 
@@ -117,44 +117,69 @@ class WarehouseController {
             $rows = $xlsx->rows();
             $user_id = $_SESSION['user_id'] ?? 1;
 
+            $valid_items = [];
+            $grand_total_cost = 0;
+
+            // BƯỚC 1: Duyệt Excel để tính Total Cost và lấy giá nhập mới
             foreach ($rows as $index => $row) {
                 if ($index == 0 || empty($row[0])) continue; 
                 
-                // 1. LẤY TÊN SẢN PHẨM TỪ CỘT A
-                $product_name = addslashes($row[0]); 
+                $product_name = trim(addslashes($row[0])); 
                 $quantity     = (int)($row[1] ?? 0);
-                $price        = (float)($row[2] ?? 0);
+                $price_input  = (float)($row[2] ?? 0); // Đây là giá nhập trong Excel
 
-                // 2. TÌM ID DỰA TRÊN TÊN (QUAN TRỌNG)
-                // Phải dùng dấu nháy đơn '$product_name' để tránh lỗi Unknown Column Airport
+                // Tìm sản phẩm trong DB
                 $sql_check = "SELECT product_id FROM products WHERE name = '$product_name' LIMIT 1";
                 $res_check = $this->db->fetchAll($sql_check);
 
                 if (!empty($res_check)) {
-                    $product_id = $res_check[0]['product_id'];
-
-                    // 3. TIẾN HÀNH LƯU VÀO DATABASE DÙNG PRODUCT_ID VỪA TÌM ĐƯỢC
-                    // Bước 3.1: Tạo phiếu nhập
-                    $this->db->execute("INSERT INTO imports (user_id, note, created_at) VALUES ($user_id, 'Nhập từ Excel', NOW())");
+                    $p_id = $res_check[0]['product_id'];
+                    $grand_total_cost += ($quantity * $price_input); // Tổng tiền hóa đơn
                     
-                    $res_import = $this->db->fetchAll("SELECT import_id FROM imports ORDER BY import_id DESC LIMIT 1");
-                    $import_id = $res_import[0]['import_id'];
-
-                    // Bước 3.2: Lưu chi tiết phiếu
-                    $this->db->execute("INSERT INTO import_details (import_id, product_id, quantity, import_price) VALUES ($import_id, $product_id, $quantity, $price)");
-
-                    // Bước 3.3: Cập nhật tồn kho
-                    $this->db->execute("UPDATE inventory SET quantity = quantity + $quantity WHERE product_id = $product_id");
-                } else {
-                    // Nếu không tìm thấy tên này trong DB, có thể bỏ qua hoặc báo lỗi
-                    // echo "Không tìm thấy sản phẩm: " . $product_name;
-                    continue;
+                    $valid_items[] = [
+                        'product_id' => $p_id,
+                        'quantity'   => $quantity,
+                        'price'      => $price_input
+                    ];
                 }
             }
-             header("Location: index.php?controller=warehouse&action=history&message=excel_success");
-             exit();
-        } else {
-            die("Lỗi đọc Excel: " . \Shuchkin\SimpleXLSX::parseError());
+
+            // BƯỚC 2: Lưu vào Database
+            if (!empty($valid_items)) {
+                // 2.1 Tạo phiếu nhập với total_cost (Dựa trên cấu trúc ảnh image_71f2a5.png)
+                $sql_import = "INSERT INTO imports (user_id, total_cost, note, created_at) 
+                               VALUES ($user_id, $grand_total_cost, 'Nhập kho từ Excel', NOW())";
+                $this->db->execute($sql_import);
+                
+                $res_import = $this->db->fetchAll("SELECT import_id FROM imports ORDER BY import_id DESC LIMIT 1");
+                $import_id = $res_import[0]['import_id'];
+
+                // 2.2 Lưu chi tiết và cập nhật bảng Product + Inventory
+                foreach ($valid_items as $item) {
+                    $p_id = $item['product_id'];
+                    $qty  = $item['quantity'];
+                    $prc  = $item['price'];
+
+                    // A. Lưu vào chi tiết phiếu nhập
+                    $this->db->execute("INSERT INTO import_details (import_id, product_id, quantity, import_price) 
+                                       VALUES ($import_id, $p_id, $qty, $prc)");
+
+                    // B. CẬP NHẬT GIÁ NHẬP VÀO BẢNG PRODUCTS (Theo ý bạn muốn)
+                    // Cột import_price trong bảng products (ảnh image_72e5a8.png) sẽ lấy giá từ Excel
+                    $this->db->execute("UPDATE products SET import_price = $prc WHERE product_id = $p_id");
+
+                    // C. Cập nhật tồn kho (Inventory)
+                    $check_inv = $this->db->fetchAll("SELECT * FROM inventory WHERE product_id = $p_id");
+                    if (!empty($check_inv)) {
+                        $this->db->execute("UPDATE inventory SET quantity = quantity + $qty WHERE product_id = $p_id");
+                    } else {
+                        $this->db->execute("INSERT INTO inventory (product_id, quantity, last_updated) VALUES ($p_id, $qty, NOW())");
+                    }
+                }
+            }
+
+            header("Location: index.php?controller=warehouse&action=history&message=excel_success");
+            exit();
         }
     }
 }
