@@ -151,7 +151,6 @@ class OrderModel
             return false;
         }
     }
-}
 
     // Hủy đơn (Trạng thái 4) + Hoàn lại số lượng vào kho
     public function cancelOrder($order_id) {
@@ -181,3 +180,6 @@ class OrderModel
         }
     }
 }
+
+    
+
