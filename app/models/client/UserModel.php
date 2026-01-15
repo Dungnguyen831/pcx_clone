@@ -92,4 +92,27 @@ class UserModel
         $stmt->execute([':phone' => $phone]);
         return $stmt->fetchColumn() > 0;
     }
+    public function deleteUser($id) {
+    
+        $sqlCheck = "SELECT COUNT(*) FROM orders WHERE user_id = ? AND status NOT IN (3, 4)";
+        $stmtCheck = $this->conn->prepare($sqlCheck);
+        $stmtCheck->execute([$id]);
+        $activeOrders = $stmtCheck->fetchColumn();
+
+        // Nếu tìm thấy đơn hàng đang xử lý (> 0) thì trả về thông báo chặn
+        if ($activeOrders > 0) {
+            return 'has_active_orders'; 
+        }
+
+        // BƯỚC 2: Nếu không có đơn hàng vướng bận, tiến hành xóa
+        $sql = "DELETE FROM users WHERE user_id = ?";
+        $stmt = $this->conn->prepare($sql);
+        
+        if ($stmt->execute([$id])) {
+            return true; // Xóa thành công
+        } else {
+            return false; // Lỗi SQL
+        }
+    }
+
 }

@@ -108,21 +108,36 @@ class UserController {
 
     // Xóa khách hàng
     public function delete() {
-        // Check Admin...
-        if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 1) exit();
+        $id = $_GET['id'] ?? null;
 
-        if (isset($_GET['id'])) {
+        if ($id) {
+            // Gọi hàm xóa vừa sửa
             $userModel = new UserModel();
-            $result = $userModel->deleteUser($_GET['id']);
+            $result = $userModel->deleteUser($id);
 
-            if ($result) {
-                // Xóa thành công
-                header("Location: index.php?controller=user&action=index");
+            if ($result === 'has_active_orders') {
+                // 1. Trường hợp bị chặn
+                echo "<script>
+                    alert('Xóa Thất Bại');
+                    window.location.href = 'index.php?controller=user&action=index';
+                </script>";
+            } elseif ($result === true) {
+                // 2. Trường hợp xóa thành công
+                echo "<script>
+                    alert('Đã xóa khách hàng thành công!');
+                    window.location.href = 'index.php?controller=user&action=index';
+                </script>";
             } else {
-                // Xóa thất bại (Thường do dính đơn hàng)
-                echo "<script>alert('Không thể xóa khách hàng này vì họ đã có dữ liệu đơn hàng!'); window.location.href='index.php?controller=user';</script>";
+                // 3. Trường hợp lỗi
+                echo "<script>
+                    alert('Lỗi hệ thống: Không thể xóa vào lúc này.');
+                    window.location.href = 'index.php?controller=user&action=index';
+                </script>";
             }
+        } else {
+            header("Location: index.php?controller=admin-user&action=index");
         }
+        exit();
     }
 }
 ?>

@@ -39,7 +39,8 @@ class ProductModel
                 FROM products p
                 LEFT JOIN brands b ON p.brand_id = b.brand_id
                 LEFT JOIN inventory i ON p.product_id = i.product_id
-                WHERE p.status = 1"; 
+                INNER JOIN categories c ON p.category_id = c.category_id
+                WHERE p.status = 1 AND c.status = 1"; 
 
         // Nếu có lọc theo danh mục -> Nối thêm điều kiện AND
         if ($cat_id) {
@@ -84,7 +85,7 @@ class ProductModel
     }
     // Lấy danh sách các loại sản phẩm (Chuột, Bàn phím...)
     public function getAllCategories() {
-        $sql = "SELECT * FROM categories";
+        $sql = "SELECT * FROM categories Where status = 1" ;
         $stmt = $this->conn->prepare($sql);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
