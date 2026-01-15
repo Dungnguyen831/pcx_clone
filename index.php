@@ -1,5 +1,8 @@
 <?php
 session_start(); // Khởi động Session (cho Giỏ hàng)
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+require_once 'app/config/database.php';
 
 // 1. Nhúng file kết nối
 require_once 'app/config/database.php';
@@ -12,6 +15,10 @@ $action = isset($_GET['action']) ? $_GET['action'] : 'index';
 
 // 3. Điều hướng (Routing đơn giản)
 switch ($controller) {
+    case 'checkout': // Chữ 'checkout' phải viết thường, không dấu cách
+        require_once 'app/controllers/client/CheckoutController.php';
+        $obj = new CheckoutController();
+        break;
     case 'home':
         require_once 'app/controllers/client/HomeController.php';
         $obj = new HomeController();
@@ -32,7 +39,7 @@ switch ($controller) {
         $obj = new ProductController();
         break;
 
-    case 'admin-product': // Quản lý sản phẩm dành cho Admin
+    case 'admin-product': 
         require_once 'app/controllers/admin/AdminProductController.php';
         $obj = new AdminProductController();
         break;
@@ -80,6 +87,16 @@ switch ($controller) {
     case 'user':
         require_once 'app/controllers/admin/AdminUserController.php';
         $obj = new UserController();
+        break;
+
+    case 'warehouse':
+        require_once 'app/controllers/warehouse/WarehouseController.php';
+        $obj = new WarehouseController();
+        break;
+
+    case 'auth':
+        require_once 'app/controllers/client/AuthController.php';
+        $obj = new AuthController();
         break;
 
     case 'report':

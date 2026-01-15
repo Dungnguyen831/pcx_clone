@@ -14,12 +14,17 @@ class OrderModel
         }
     }
 
-    // --- GIỮ NGUYÊN LOGIC CŨ ---
-    public function getOrdersByUser($user_id)
-    {
-        $sql = "SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC";
+    // Lấy danh sách đơn hàng của một người dùng
+    public function getOrdersByUser($user_id, $status = null) {
+        $sql = "SELECT * FROM orders WHERE user_id = ?";
+        $params = [$user_id];
+        if ($status !== null) {
+        $sql .= " AND status = ?";
+        $params[] = $status;
+        }
+        $sql .= " ORDER BY created_at DESC";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$user_id]);
+        $stmt->execute($params);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -116,42 +121,6 @@ class OrderModel
         }
     }
 
-    // --- SỬA LẠI ĐỂ HOÀN KHO KHI HỦY ---
-    public function cancelOrder($order_id)
-    {
-        try {
-            $this->db->beginTransaction();
-
-            $order = $this->getOrderById($order_id);
-            $items = $this->getOrderItems($order_id);
-
-            if (!$order) throw new Exception("Order not found");
-
-            // Cập nhật trạng thái Hủy (4)
-            $sqlUpdate = "UPDATE orders SET status = 4 WHERE order_id = ?";
-            $this->db->prepare($sqlUpdate)->execute([$order_id]);
-
-            // BỔ SUNG: Hoàn lại kho
-            $sqlRestoreInv = "UPDATE inventory SET quantity = quantity + ? WHERE product_id = ?";
-            $stmtRestore = $this->db->prepare($sqlRestoreInv);
-            foreach ($items as $item) {
-                $stmtRestore->execute([$item['quantity'], $item['product_id']]);
-            }
-
-            // BỔ SUNG: Hoàn lại mã giảm giá
-            if (!empty($order['coupon_code'])) {
-                $sqlRestoreCoupon = "UPDATE coupons SET used_count = used_count - 1 WHERE code = ? AND used_count > 0";
-                $this->db->prepare($sqlRestoreCoupon)->execute([$order['coupon_code']]);
-            }
-
-            $this->db->commit();
-            return true;
-        } catch (Exception $e) {
-            $this->db->rollBack();
-            return false;
-        }
-    }
-
     // Hủy đơn (Trạng thái 4) + Hoàn lại số lượng vào kho
     public function cancelOrder($order_id) {
         // 1. Lấy thông tin đơn hàng để xem nó dùng mã gì
@@ -178,6 +147,16 @@ class OrderModel
 
             $this->db->prepare($sqlRestore)->execute([':code' => $order['coupon_code']]);
         }
+    }
+
+    //Nhận
+    public function updateStatus($orderId, $status)
+    {
+        $sql = "UPDATE orders SET status = :status WHERE order_id = :id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindParam(':status', $status);
+        $stmt->bindParam(':id', $orderId);
+        return $stmt->execute();
     }
 }
 

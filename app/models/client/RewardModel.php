@@ -7,17 +7,45 @@ class RewardModel
         $db = new Database();
         $this->conn = $db->getConnection();
     }
-
+    //Thay đổi hàm lấy danh sách mã giảm giá để kèm trạng thái đã dùng/chưa dùng của user
     // --- LOGIC TỰ ĐỘNG QUÉT ĐIỂM TỪ ĐƠN HÀNG HOÀN THÀNH ---
     //lấy những đơn hàng có trạng thái là hoàn thành nhưng chưa được tính điểm
     //tính điểm cập nhật vào bảng customers
     //đánh dấu đơn hàng đã được tính điểm vào bảng orders
     public function updatePointsFromOrders($user_id)
     {
-        // Lấy đơn hàng Hoàn thành (3) nhưng chưa tính điểm (0)
-        $sql = "SELECT order_id, final_money, coupon_code FROM orders 
-                WHERE user_id = :uid AND status = 3 AND is_points_calculated = 0";
-        $stmt = $this->conn->prepare($sql);
+        // --- PHẦN 1: TỰ ĐỘNG KHÓA VÀ HOÀN MÃ VOUCHER ---
+
+        // A. KHÓA MÃ (Chuyển is_used = 1): Áp dụng cho đơn hàng Đang xử lý/Giao (status != 4)
+        $sqlLock = "UPDATE user_coupons uc 
+                JOIN coupons c ON uc.coupon_id = c.coupon_id
+                SET uc.is_used = 1 
+                WHERE uc.user_id = :uid 
+                AND uc.is_used = 0 
+                AND c.code IN (
+                    SELECT coupon_code FROM orders 
+                    WHERE user_id = :uid AND status != 4 AND coupon_code IS NOT NULL
+                )";
+        $this->conn->prepare($sqlLock)->execute([':uid' => $user_id]);
+
+        // B. HOÀN MÃ (Chuyển is_used = 0): Áp dụng cho đơn hàng Đã hủy (status = 4)
+        // Giúp khách hàng lấy lại mã để dùng cho đơn khác nếu đơn cũ bị hủy
+        $sqlUnlock = "UPDATE user_coupons uc 
+                  JOIN coupons c ON uc.coupon_id = c.coupon_id
+                  SET uc.is_used = 0 
+                  WHERE uc.user_id = :uid 
+                  AND uc.is_used = 1 
+                  AND c.code IN (
+                      SELECT coupon_code FROM orders 
+                      WHERE user_id = :uid AND status = 4 AND coupon_code IS NOT NULL
+                  )";
+        $this->conn->prepare($sqlUnlock)->execute([':uid' => $user_id]);
+
+
+        // --- PHẦN 2: LOGIC TÍNH ĐIỂM THƯỞNG (GIỮ NGUYÊN) ---
+        $sqlPoints = "SELECT order_id, final_money FROM orders 
+                  WHERE user_id = :uid AND status = 3 AND is_points_calculated = 0";
+        $stmt = $this->conn->prepare($sqlPoints);
         $stmt->execute([':uid' => $user_id]);
         $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -25,25 +53,14 @@ class RewardModel
             foreach ($orders as $order) {
                 try {
                     $this->conn->beginTransaction();
-                    // Tính điểm: 100.000đ = 1 điểm
+                    // 100.000đ = 1 điểm
                     $pointsToEarn = floor($order['final_money'] / 100000);
 
                     if ($pointsToEarn > 0) {
-                        // Cộng điểm vào bảng customers
                         $this->conn->prepare("UPDATE customers SET reward_points = reward_points + ? WHERE user_id = ?")
                             ->execute([$pointsToEarn, $user_id]);
                     }
 
-                    // Đánh dấu mã giảm giá trong ví là đã dùng (is_used = 1)
-                    if (!empty($order['coupon_code'])) {
-                        $sqlWallet = "UPDATE user_coupons uc 
-                                      JOIN coupons c ON uc.coupon_id = c.coupon_id 
-                                      SET uc.is_used = 1 
-                                      WHERE uc.user_id = :uid AND c.code = :code";
-                        $this->conn->prepare($sqlWallet)->execute([':uid' => $user_id, ':code' => $order['coupon_code']]);
-                    }
-
-                    // Đánh dấu đơn hàng này đã tính điểm xong
                     $this->conn->prepare("UPDATE orders SET is_points_calculated = 1 WHERE order_id = ?")
                         ->execute([$order['order_id']]);
 
@@ -72,19 +89,16 @@ class RewardModel
 
     public function getOwnedCoupons($user_id)
     {
-        // Lấy mã từ ví (user_coupons)
-        // NHƯNG loại bỏ ngay những mã đã xuất hiện trong bảng đơn hàng (orders) mà không bị hủy
+        // Trước khi lấy danh sách, gọi hàm quét để cập nhật trạng thái is_used mới nhất
+        $this->updatePointsFromOrders($user_id);
+
+        // Bây giờ chỉ cần lấy những mã có is_used = 0
+        // Vì những mã đang "treo" ở đơn hàng (status != 4) đã bị hàm trên chuyển thành is_used = 1 rồi
         $sql = "SELECT c.*, uc.created_at as owned_at 
             FROM user_coupons uc
             JOIN coupons c ON uc.coupon_id = c.coupon_id
             WHERE uc.user_id = :uid 
             AND uc.is_used = 0 
-            AND c.code NOT IN (
-                SELECT coupon_code FROM orders 
-                WHERE user_id = :uid 
-                AND status != 4 
-                AND coupon_code IS NOT NULL
-            )
             ORDER BY uc.created_at DESC";
 
         $stmt = $this->conn->prepare($sql);

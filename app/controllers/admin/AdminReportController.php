@@ -3,7 +3,7 @@ require_once 'app/models/admin/AdminReportModel.php';
 
 class AdminReportController {
     public function index() {
-        require_once 'app/models/admin/AdminReportModel.php';
+
         $reportModel = new AdminReportModel();
 
         // 1. Lấy khoảng thời gian từ URL (hoặc mặc định 30 ngày gần nhất)

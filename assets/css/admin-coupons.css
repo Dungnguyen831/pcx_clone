@@ -270,3 +270,63 @@
   background-color: #3498db;
   border-radius: 10px;
 }
+/* --- BỔ SUNG NÚT NHẬP/XUẤT EXCEL --- */
+.btn-success {
+  background: #27ae60; /* Màu xanh lá */
+  color: white;
+}
+.btn-success:hover {
+  background: #219150;
+  transform: translateY(-1px);
+}
+
+.btn-warning {
+  background: #f39c12; /* Màu vàng cam */
+  color: white;
+}
+.btn-warning:hover {
+  background: #d68910;
+  transform: translateY(-1px);
+}
+
+/* Đảm bảo các nút không bị co lại trên màn hình nhỏ */
+.filter-form .btn {
+  flex-shrink: 0;
+}
+/* --- BỔ SUNG MÀU SẮC CHO NÚT --- */
+
+/* Nút Nhập Excel (Màu cam) */
+.btn-warning {
+  background-color: #f39c12 !important; /* Màu cam nổi bật */
+  color: #ffffff !important; /* Chữ màu trắng */
+  border: 1px solid #e67e22; /* Viền đậm hơn chút */
+}
+
+.btn-warning:hover {
+  background-color: #d35400 !important; /* Khi di chuột vào thì đậm hơn */
+  color: #ffffff !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Đổ bóng nhẹ */
+}
+
+/* Nút Xuất Excel (Màu xanh lá) */
+.btn-success {
+  background-color: #27ae60 !important; /* Màu xanh lá */
+  color: #ffffff !important;
+  border: 1px solid #219150;
+}
+
+.btn-success:hover {
+  background-color: #219150 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Chỉnh lại icon bên trong nút cho đẹp */
+.btn i {
+  margin-right: 5px;
+}
+
+/* Tạo khoảng cách giữa các nút */
+.filter-item-btn .btn {
+  margin-left: 5px;
+}

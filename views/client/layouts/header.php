@@ -29,11 +29,11 @@ else if (isset($_SESSION['cart'])) {
 
 <body>
 
-    <header>
-        <div class="container header-flex">
-            <a href="index.php" class="logo">
-                <i class="fa-solid fa-layer-group"></i> PCX Clone
-            </a>
+<header>
+    <div class="container header-flex">
+        <a href="index.php" class="logo">
+            <i class="fa-solid fa-layer-group"></i> PCX Clone
+        </a>
 
             <nav>
                 <ul class="main-menu">

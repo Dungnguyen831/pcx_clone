@@ -49,16 +49,40 @@ class UserModel
     // --- ĐĂNG KÝ ---
     public function register($full_name, $email, $password, $phone)
     {
-        // Khớp chính xác với cấu trúc: full_name, email, password, phone, role
-        $sql = "INSERT INTO users (full_name, email, password, phone, role) 
-                VALUES (:full_name, :email, :password, :phone, 0)";
-        $stmt = $this->conn->prepare($sql);
-        return $stmt->execute([
-            ':full_name' => $full_name,
-            ':email'     => $email,
-            ':password'  => $password, 
-            ':phone'     => $phone
-        ]);
+        try {
+            // 1. Bắt đầu giao dịch
+            $this->conn->beginTransaction();
+
+            // 2. Thêm vào bảng USERS
+            // (Lưu ý: Tôi giữ nguyên biến $password của bạn để khớp với hàm checkLogin hiện tại)
+            $sqlUser = "INSERT INTO users (full_name, email, password, phone, role, created_at) 
+                        VALUES (:name, :email, :pass, :phone, 0, NOW())";
+            
+            $stmtUser = $this->conn->prepare($sqlUser);
+            $stmtUser->execute([
+                ':name'  => $full_name,
+                ':email' => $email,
+                ':pass'  => $password, 
+                ':phone' => $phone
+            ]);
+
+            // 3. Lấy ID vừa tạo ra
+            $userId = $this->conn->lastInsertId();
+
+            // 4. Thêm vào bảng CUSTOMERS
+            $sqlCustomer = "INSERT INTO customers (user_id, reward_points) VALUES (:uid, 0)";
+            $stmtCustomer = $this->conn->prepare($sqlCustomer);
+            $stmtCustomer->execute([':uid' => $userId]);
+
+            // 5. Nếu cả 2 lệnh đều OK -> Lưu lại
+            $this->conn->commit();
+            return true;
+
+        } catch (Exception $e) {
+            // 6. Nếu lỗi -> Hoàn tác tất cả (Không thêm bảng nào cả)
+            $this->conn->rollBack();
+            return false;
+        }
     }
 
     // --- CẬP NHẬT HỒ SƠ ---
@@ -91,5 +115,28 @@ class UserModel
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([':phone' => $phone]);
         return $stmt->fetchColumn() > 0;
+    }
+
+    public function deleteUser($id) {
+    
+        $sqlCheck = "SELECT COUNT(*) FROM orders WHERE user_id = ? AND status NOT IN (3, 4)";
+        $stmtCheck = $this->conn->prepare($sqlCheck);
+        $stmtCheck->execute([$id]);
+        $activeOrders = $stmtCheck->fetchColumn();
+
+        // Nếu tìm thấy đơn hàng đang xử lý (> 0) thì trả về thông báo chặn
+        if ($activeOrders > 0) {
+            return 'has_active_orders'; 
+        }
+
+        // BƯỚC 2: Nếu không có đơn hàng vướng bận, tiến hành xóa
+        $sql = "DELETE FROM users WHERE user_id = ?";
+        $stmt = $this->conn->prepare($sql);
+        
+        if ($stmt->execute([$id])) {
+            return true; // Xóa thành công
+        } else {
+            return false; // Lỗi SQL
+        }
     }
 }

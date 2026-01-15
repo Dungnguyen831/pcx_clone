@@ -35,20 +35,28 @@ class AdminReportModel
     // Lấy tổng tiền nhập hàng (dựa trên bảng imports)
     public function getImportCost($fromDate, $toDate)
     {
-        // Kiểm tra xem bảng imports có tồn tại chưa, nếu chưa có thì trả về 0 để tránh lỗi
         try {
-            $sql = "SELECT SUM(total_cost) as total 
-                    FROM imports 
-                    WHERE created_at BETWEEN :from AND :to";
+            // Thay vì SELECT từ bảng imports (đang bị bằng 0), ta JOIN sang bảng import_details
+            // i: đại diện bảng imports (để lấy ngày tháng)
+            // d: đại diện bảng import_details (để lấy tiền)
+            $sql = "SELECT SUM(d.total_price) as total
+                    FROM imports i
+                    JOIN import_details d ON i.import_id = d.import_id
+                    WHERE i.created_at BETWEEN :from AND :to";
+
             $stmt = $this->conn->prepare($sql);
             $stmt->execute([
                 ':from' => $fromDate . ' 00:00:00', 
-                ':to' => $toDate . ' 23:59:59'
+                ':to'   => $toDate . ' 23:59:59'
             ]);
+            
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            // Nếu không có dữ liệu thì trả về 0
             return $row['total'] ?? 0;
+
         } catch (Exception $e) {
-            return 0; // Trả về 0 nếu chưa làm chức năng nhập kho
+            return 0; 
         }
     }
 
@@ -61,6 +69,7 @@ class AdminReportModel
                     FROM order_details od
                     JOIN orders o ON od.order_id = o.order_id
                     JOIN products p ON od.product_id = p.product_id
+                    
                     WHERE o.status = 3 
                     AND o.created_at BETWEEN :from AND :to";
             $stmt = $this->conn->prepare($sql);
