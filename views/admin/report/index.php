@@ -96,10 +96,10 @@
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false, // Để biểu đồ tự co giãn theo chiều cao div cha
+            maintainAspectRatio: false, 
             plugins: {
                 legend: {
-                    display: false // Ẩn chú thích nếu chỉ có 1 đường cho gọn
+                    display: false 
                 },
                 tooltip: {
                     callbacks: {
@@ -119,7 +119,6 @@
                 y: {
                     beginAtZero: true,
                     ticks: {
-                        // Format trục Y thành tiền tệ cho đẹp (ví dụ: 1M, 500k...)
                         callback: function(value) {
                             return new Intl.NumberFormat('vi-VN', { notation: "compact" }).format(value) + 'đ';
                         }

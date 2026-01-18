@@ -1,5 +1,4 @@
 <?php
-// app/models/UserModel.php
 require_once 'app/config/database.php';
 
 class UserModel
@@ -12,23 +11,19 @@ class UserModel
         $this->conn = $db->getConnection();
     }
 
-    // --- ĐĂNG NHẬP ---
     public function checkLogin($email, $password)
     {
-        // Sử dụng đúng tên cột email
         $sql = "SELECT * FROM users WHERE email = :email";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([':email' => $email]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        // Kiểm tra mật khẩu (đang so sánh chuỗi thuần theo logic của bạn)
         if ($user && $password === $user['password']) {
             return $user;
         }
         return false;
     }
 
-    // --- KIỂM TRA TỒN TẠI EMAIL ---
     public function isEmailExists($email)
     {
         $sql = "SELECT COUNT(*) FROM users WHERE email = :email";
@@ -37,7 +32,6 @@ class UserModel
         return $stmt->fetchColumn() > 0;
     }
 
-    // --- LẤY THÔNG TIN THEO ID ---
     public function getUserById($id) {
         $sql = "SELECT * FROM users WHERE user_id = ?";
         $stmt = $this->conn->prepare($sql);
@@ -46,15 +40,10 @@ class UserModel
     }
     
 
-    // --- ĐĂNG KÝ ---
     public function register($full_name, $email, $password, $phone)
     {
         try {
-            // 1. Bắt đầu giao dịch
             $this->conn->beginTransaction();
-
-            // 2. Thêm vào bảng USERS
-            // (Lưu ý: Tôi giữ nguyên biến $password của bạn để khớp với hàm checkLogin hiện tại)
             $sqlUser = "INSERT INTO users (full_name, email, password, phone, role, created_at) 
                         VALUES (:name, :email, :pass, :phone, 0, NOW())";
             
@@ -66,20 +55,16 @@ class UserModel
                 ':phone' => $phone
             ]);
 
-            // 3. Lấy ID vừa tạo ra
             $userId = $this->conn->lastInsertId();
 
-            // 4. Thêm vào bảng CUSTOMERS
             $sqlCustomer = "INSERT INTO customers (user_id, reward_points) VALUES (:uid, 0)";
             $stmtCustomer = $this->conn->prepare($sqlCustomer);
             $stmtCustomer->execute([':uid' => $userId]);
 
-            // 5. Nếu cả 2 lệnh đều OK -> Lưu lại
             $this->conn->commit();
             return true;
 
         } catch (Exception $e) {
-            // 6. Nếu lỗi -> Hoàn tác tất cả (Không thêm bảng nào cả)
             $this->conn->rollBack();
             return false;
         }
@@ -101,12 +86,46 @@ class UserModel
     }
 
    
-    // --- LẤY DANH SÁCH KHÁCH HÀNG ---
-    public function getAllCustomers() {
-        $sql = "SELECT * FROM users WHERE role = 0 ORDER BY user_id DESC";
+    // --- 1. LẤY DANH SÁCH USER THEO ROLE (Thay thế hàm getAllCustomers cũ) ---
+    public function getUsersByRole($role) {
+        if ($role == 0) {
+            // Nếu là Khách hàng (0): JOIN bảng customers để lấy điểm thưởng
+            $sql = "SELECT u.*, c.reward_points 
+                    FROM users u
+                    LEFT JOIN customers c ON u.user_id = c.user_id 
+                    WHERE u.role = 0 
+                    ORDER BY u.user_id DESC";
+        } else {
+            // Nếu là Nhân viên (2) hoặc Admin (1): Chỉ lấy bảng users
+            $sql = "SELECT * FROM users WHERE role = ? ORDER BY user_id DESC";
+        }
+
         $stmt = $this->conn->prepare($sql);
-        $stmt->execute();
+        
+        if ($role == 0) {
+            $stmt->execute();
+        } else {
+            $stmt->execute([$role]);
+        }
+        
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // Thêm tài khoản cho nhân viên thủ kho
+    public function createUser($data) {
+        $sql = "INSERT INTO users (full_name, email, password, phone, role, created_at) 
+                VALUES (:name, :email, :pass, :phone, :role, NOW())";
+        
+        $stmt = $this->conn->prepare($sql);
+        return $stmt->execute([
+            ':name'  => $data['full_name'],
+            ':email' => $data['email'],
+            
+            ':pass'  => $data['password'], 
+            
+            ':phone' => $data['phone'],
+            ':role'  => $data['role']
+        ]);
     }
 
     public function isPhoneExists($phone)
@@ -124,17 +143,23 @@ class UserModel
         $stmtCheck->execute([$id]);
         $activeOrders = $stmtCheck->fetchColumn();
 
-        // Nếu tìm thấy đơn hàng đang xử lý (> 0) thì trả về thông báo chặn
         if ($activeOrders > 0) {
             return 'has_active_orders'; 
         }
 
-        // BƯỚC 2: Nếu không có đơn hàng vướng bận, tiến hành xóa
+        $sqlCheckImport = "SELECT COUNT(*) FROM imports WHERE user_id = ?";
+        $stmtCheckImport = $this->conn->prepare($sqlCheckImport);
+        $stmtCheckImport->execute([$id]);
+        
+        if ($stmtCheckImport->fetchColumn() > 0) {
+            return 'has_imports'; 
+        }
+
         $sql = "DELETE FROM users WHERE user_id = ?";
         $stmt = $this->conn->prepare($sql);
         
         if ($stmt->execute([$id])) {
-            return true; // Xóa thành công
+            return true; 
         } else {
             return false; // Lỗi SQL
         }

@@ -112,7 +112,7 @@ if (!isset($errors)) $errors = [];
             <div class="filter-item-search">
                 <input type="text" name="keyword" class="form-control" value="<?= htmlspecialchars($keyword) ?>" placeholder="Nhập mã coupon cần tìm...">
             </div>
-            <div class="filter-item-select">
+            <!-- <div class="filter-item-select">
                 <select name="discount_type" class="form-control">
                     <option value="">-- Tất cả loại --</option>
                     <option value="percent" <?= $typeFilter == 'percent' ? 'selected' : '' ?>>Phần trăm (%)</option>
@@ -125,7 +125,7 @@ if (!isset($errors)) $errors = [];
                     <option value="1" <?= $statusFilter === '1' ? 'selected' : '' ?>>Đang Kích hoạt</option>
                     <option value="0" <?= $statusFilter === '0' ? 'selected' : '' ?>>Đang Tạm dừng</option>
                 </select>
-            </div>
+            </div> -->
 
             <div class="filter-item-btn">
                 <button type="submit" class="btn btn-primary" title="Tìm kiếm"><i class="fa-solid fa-search"></i> Tìm</button>

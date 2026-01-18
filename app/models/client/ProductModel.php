@@ -39,11 +39,11 @@ class ProductModel
                 FROM products p
                 LEFT JOIN brands b ON p.brand_id = b.brand_id
                 LEFT JOIN inventory i ON p.product_id = i.product_id
-                WHERE p.status = 1"; 
+                WHERE p.category_id = 1 AND p.status = 1"; 
 
         // Nếu có lọc theo danh mục -> Nối thêm điều kiện AND
         if ($cat_id) {
-            $sql .= " AND p.category_id = :cat_id";
+            $sql .= " AND p.category_id = 4";
         }
 
         // Nếu có tìm kiếm -> Nối thêm điều kiện AND LIKE
@@ -97,7 +97,7 @@ class ProductModel
                 FROM products p 
                 LEFT JOIN brands b ON p.brand_id = b.brand_id 
                 LEFT JOIN inventory i ON p.product_id = i.product_id
-                WHERE p.category_id = :cat_id AND p.status = 1";
+                WHERE p.category_id = 1 AND p.status = 1";
                 
         $stmt = $this->conn->prepare($sql);
         $stmt->bindValue(':cat_id', $cat_id, PDO::PARAM_INT);

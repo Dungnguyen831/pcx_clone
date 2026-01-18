@@ -1,16 +1,13 @@
 <?php
-// app/controllers/client/AuthController.php
 require_once 'app/models/client/UserModel.php';
 
 class AuthController
 {
-    // 1. Hiển thị form đăng nhập
     public function login()
     {
         require_once 'views/client/auth/login.php';
     }
 
-    // 2. Xử lý khi bấm nút "Đăng nhập"
     public function processLogin()
     {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -42,13 +39,11 @@ class AuthController
         }
     }
 
-    // 3. Hiển thị form đăng ký
     public function register()
     {
         require_once 'views/client/auth/register.php';
     }
 
-    // 4. Xử lý khi bấm nút "Đăng ký"
     public function processRegister()
     {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -59,7 +54,6 @@ class AuthController
 
             $userModel = new UserModel();
 
-            // Kiểm tra trùng Email
             if ($userModel->isEmailExists($email)) {
                 $error = "Email này đã được sử dụng!";
                 $old_data = $_POST;
@@ -67,7 +61,6 @@ class AuthController
                 return;
             }
 
-            // Kiểm tra trùng Số điện thoại
             if ($userModel->isPhoneExists($phone)) {
                 $error = "Số điện thoại này đã được sử dụng!";
                 $old_data = $_POST;
@@ -88,21 +81,16 @@ class AuthController
         }
     }
 
-    // 5. Đăng xuất
     public function logout()
     {
-        // Bắt đầu session nếu nó chưa được khởi chạy (phòng trường hợp lỗi)
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
 
-        // Xóa sạch tất cả các biến trong $_SESSION
         $_SESSION = array();
 
-        // Hủy bỏ session trên server
         session_destroy();
 
-        // Chuyển hướng về trang chủ và ép buộc làm mới header
         header("Location: index.php");
         exit();
     }

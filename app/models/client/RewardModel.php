@@ -54,7 +54,7 @@ class RewardModel
                 try {
                     $this->conn->beginTransaction();
                     // 100.000đ = 1 điểm
-                    $pointsToEarn = floor($order['final_money'] / 100000);
+                    $pointsToEarn = floor($order['final_money'] / 50000);
 
                     if ($pointsToEarn > 0) {
                         $this->conn->prepare("UPDATE customers SET reward_points = reward_points + ? WHERE user_id = ?")

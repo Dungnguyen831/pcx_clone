@@ -19,6 +19,7 @@ class AdminOrderController
         $search_id = $_GET['search_id'] ?? null;
         $search_name = $_GET['search_name'] ?? null;
 
+
         $action = $_GET['action'] ?? 'index';
         $status = null;
         
@@ -44,6 +45,9 @@ class AdminOrderController
         $page_title = "Quản lý đơn hàng";
         $controller = 'order';
         $content_view = 'views/admin/order/index.php';
+        if (!isset($_GET['action'])) {
+            $_GET['action'] = 'created_at_desc';
+        }
 
         require_once 'views/admin/layouts/page.php';
     }

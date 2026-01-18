@@ -11,7 +11,6 @@ class CartModel
 
     public function addToCart($user_id, $product_id, $quantity)
     {
-        // Kiểm tra xem sản phẩm đã có trong giỏ hàng của user này chưa
         $sql = "SELECT cart_id, quantity FROM carts WHERE user_id = :user_id AND product_id = :product_id";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([':user_id' => $user_id, ':product_id' => $product_id]);
@@ -79,10 +78,8 @@ class CartModel
         return $result['total'] ?? 0;
     }
 
-    // Thêm tham số $user_id vào hàm
     public function checkCoupon($code, $totalOrderValue, $user_id = 0)
     {
-        // 1. Lấy thông tin mã giảm giá (Code cũ giữ nguyên)
         $sql = "SELECT * FROM coupons 
                 WHERE code = :code 
                 AND status = 1 
@@ -101,12 +98,8 @@ class CartModel
             return ['valid' => false, 'msg' => 'Đơn hàng chưa đủ giá trị tối thiểu!'];
         }
 
-        // ================================================================
-        // 2. LOGIC MỚI: KIỂM TRA LỊCH SỬ DÙNG CỦA NGƯỜI NÀY
-        // ================================================================
+        // Kiểm tra lịch sử dùng mã
         if ($user_id > 0) {
-            // Kiểm tra trong bảng orders xem user này đã dùng mã này chưa
-            // VÀ đơn hàng đó KHÔNG bị hủy (Ví dụ status = -1 là hủy, tùy quy định của bạn)
             $sqlCheckUser = "SELECT COUNT(*) as used FROM orders 
                             WHERE user_id = :uid 
                             AND coupon_code = :code 
