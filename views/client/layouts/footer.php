@@ -61,6 +61,8 @@
     </script>
     <?php unset($_SESSION['error_msg']); ?>
 <?php endif; ?>
+
+<script src="assets/js/slider.js"></script>
 </body>
 
 </html>

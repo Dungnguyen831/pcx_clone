@@ -45,13 +45,13 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       // 6. Validate Số điện thoại (Định dạng Việt Nam)
-      const phonePattern = /^(0[3|5|7|8|9])([0-9]{8})$/;
+      const phonePattern = /^(0[35789][0-9]{8}|1[89]00[0-9]{4})$/;
       if (phone === "") {
         showError("phoneError", "Vui lòng nhập số điện thoại");
       } else if (!phonePattern.test(phone)) {
         showError(
           "phoneError",
-          "Số điện thoại phải có 10 số và bắt đầu bằng 0"
+          "Số điện thoại không hợp lệ (di động Việt Nam hoặc tổng đài 1800, 1900)"
         );
       }
 

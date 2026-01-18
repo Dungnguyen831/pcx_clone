@@ -4,10 +4,59 @@
             <i class="fa-solid fa-boxes-stacked" style="color: var(--primary-color);"></i>
             Quản lý sản phẩm
         </h2>
-        <a href="index.php?controller=admin-product&action=create" class="btn btn-primary" style="display: flex; align-items: center; gap: 8px; padding: 10px 20px;">
-            <i class="fa-solid fa-plus"></i> Thêm sản phẩm mới
-        </a>
+
+        <div style="display: flex; gap: 10px;">
+            <!-- Xuất Excel -->
+            <a href="index.php?controller=admin-product&action=exportExcel"
+            class="btn"
+            style="background:#ecfeff; color:#0891b2; border:1px solid #bae6fd;
+                    display:flex; align-items:center; gap:8px; padding:10px 18px;
+                    border-radius:6px; font-weight:600;">
+                <i class="fa-solid fa-file-export"></i> Xuất Excel
+            </a>
+
+            <!-- Nhập Excel -->
+            <button type="button" 
+                onclick="document.getElementById('excelInput').click()" 
+                class="btn btn-success" 
+                style="display:flex; align-items:center; gap:8px;">
+            <i class="fa-solid fa-file-import"></i> Nhập Excel
+        </button>
+
+        <form id="importForm" 
+            action="index.php?controller=admin-product&action=importExcel" 
+            method="POST" 
+            enctype="multipart/form-data" 
+            style="display:none">
+            
+            <input type="file" 
+                id="excelInput" 
+                name="excel_file" 
+                accept=".xlsx, .xls"
+                onchange="if(confirm('Bạn có chắc muốn nhập dữ liệu từ file này?')) document.getElementById('importForm').submit();">
+        </form>
+
+
+            <!-- Thêm sản phẩm -->
+            <a href="index.php?controller=admin-product&action=create"
+            class="btn btn-primary"
+            style="display:flex; align-items:center; gap:8px; padding:10px 20px;">
+                <i class="fa-solid fa-plus"></i> Thêm sản phẩm mới
+            </a>
+        </div>
     </div>
+
+    <form id="importForm"
+      action="index.php?controller=admin-product&action=importExcel"
+      method="POST"
+      enctype="multipart/form-data"
+      style="display:none">
+
+    <input type="file"
+           id="excelInput"
+           name="excel_file"
+           accept=".xls, .xlsx">
+    </form>
 
     <div style="background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #edf2f7; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
         <form action="index.php" method="GET" style="display: grid; grid-template-columns: 1fr 3fr auto; gap: 15px; align-items: end;">
@@ -45,24 +94,17 @@
 
     <?php if (isset($_GET['msg'])): ?>
         <?php
-        $msg = '';
-        $bg = '';
-        if ($_GET['msg'] == 'success') {
-            $msg = 'Thêm sản phẩm thành công!';
-            $bg = 'var(--success)';
-        }
-        if ($_GET['msg'] == 'updated') {
-            $msg = 'Cập nhật thành công!';
-            $bg = 'var(--primary-color)';
-        }
-        if ($_GET['msg'] == 'deleted') {
-            $msg = 'Đã xóa sản phẩm!';
-            $bg = 'var(--danger)';
-        }
+        $msg_map = [
+            'success' => ['Thêm sản phẩm thành công!', 'var(--success)', 'fa-circle-check'],
+            'updated' => ['Cập nhật thành công!', 'var(--primary-color)', 'fa-circle-check'],
+            'deleted' => ['Đã xóa sản phẩm!', 'var(--danger)', 'fa-trash-can'],
+            'error_processing' => ['Không thể xóa! Sản phẩm đang có trong đơn hàng đang xử lý.', '#f59e0b', 'fa-triangle-exclamation']
+        ];
+        $status = $msg_map[$_GET['msg']] ?? null;
         ?>
-        <?php if ($msg): ?>
-            <div style="padding: 12px 20px; background: <?= $bg ?>; color: #fff; border-radius: 6px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; font-weight: 500;">
-                <i class="fa-solid fa-circle-check"></i> <?= $msg ?>
+        <?php if ($status): ?>
+            <div style="padding: 12px 20px; background: <?= $status[1] ?>; color: #fff; border-radius: 6px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; font-weight: 500;">
+                <i class="fa-solid <?= $status[2] ?>"></i> <?= $status[0] ?>
             </div>
         <?php endif; ?>
     <?php endif; ?>
@@ -86,7 +128,7 @@
                     <tr style="border-bottom: 1px solid #f1f5f9; transition: background 0.2s;">
                         <td style="padding: 12px 15px; color: #64748b; font-family: monospace;">#<?= $p['product_id'] ?></td>
                         <td style="padding: 12px 15px;">
-                            <img src="assets/uploads/<?= !empty($p['image']) ? $p['image'] : 'default.png' ?>"
+                            <img src="assets/uploads/products/<?= !empty($p['image']) ? $p['image'] : 'default.png' ?>"
                                 alt="Product"
                                 style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px; border: 1px solid #f1f5f9; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
                         </td>
@@ -118,10 +160,12 @@
                                     class="btn-sm btn-delete"
                                     onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')" title="Xóa" style="background: #fff5f5; color: var(--danger); border: 1px solid #fed7d7; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 6px;">
                                     <i class="fa-solid fa-trash"></i>
+                                    
                                 </a>
                             </div>
                         </td>
                     </tr>
+                    
                 <?php endforeach; ?>
             <?php else: ?>
                 <tr>
@@ -132,6 +176,20 @@
                     </td>
                 </tr>
             <?php endif; ?>
+            
         </tbody>
     </table>
 </div>
+
+<!-- JS IMPORT EXCEL -->
+<script>
+function openExcel() {
+    document.getElementById('excelInput').click();
+}
+
+document.getElementById('excelInput').addEventListener('change', function () {
+    if (this.files.length > 0) {
+        document.getElementById('importForm').submit();
+    }
+});
+</script>

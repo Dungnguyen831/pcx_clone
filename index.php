@@ -1,26 +1,45 @@
 <?php
 session_start(); // Khởi động Session (cho Giỏ hàng)
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+require_once 'app/config/database.php';
 
 // 1. Nhúng file kết nối
 require_once 'app/config/database.php';
 
+$db = new Database();
+$pdo = $db->getConnection();
 // 2. Lấy yêu cầu từ URL (Ví dụ: index.php?controller=product&action=detail)
 $controller = isset($_GET['controller']) ? $_GET['controller'] : 'home';
 $action = isset($_GET['action']) ? $_GET['action'] : 'index';
 
 // 3. Điều hướng (Routing đơn giản)
 switch ($controller) {
+    case 'checkout': // Chữ 'checkout' phải viết thường, không dấu cách
+        require_once 'app/controllers/client/CheckoutController.php';
+        $obj = new CheckoutController();
+        break;
     case 'home':
         require_once 'app/controllers/client/HomeController.php';
         $obj = new HomeController();
         break;
 
-    case 'product':
-        require_once 'app/controllers/client/ProductController.php';
-        // $obj = new ProductController();
+    case 'admin-profile':
+        require_once 'app/controllers/client/AuthController.php';
+        $obj = new AuthController();
         break;
 
-    case 'admin-product': // Quản lý sản phẩm dành cho Admin
+    case 'admin-coupon':
+        require_once 'app/controllers/admin/AdminCouponController.php';
+        $obj = new AdminCouponController();
+        break;
+
+    case 'product':
+        require_once 'app/controllers/client/ProductController.php';
+        $obj = new ProductController();
+        break;
+
+    case 'admin-product': 
         require_once 'app/controllers/admin/AdminProductController.php';
         $obj = new AdminProductController();
         break;
@@ -30,9 +49,19 @@ switch ($controller) {
         $obj = new AdminOrderController();
         break;
 
+    case 'admin-category':
+        require_once 'app/controllers/admin/AdminCategoryController.php';
+        $obj = new AdminCategoryController();
+        break;
+
+    case 'admin-brand':
+        require_once 'app/controllers/admin/AdminBrandController.php';
+        $obj = new AdminBrandController();
+        break;
+
     case 'cart':
         require_once 'app/controllers/client/CartController.php';
-        // $obj = new CartController();
+        $obj = new CartController();
         break;
 
     case 'admin':
@@ -43,6 +72,36 @@ switch ($controller) {
     case 'auth':
         require_once 'app/controllers/client/AuthController.php';
         $obj = new AuthController();
+        break;
+
+    case 'order':
+        require_once 'app/controllers/client/OrderController.php';
+        $obj = new OrderController();
+        break;
+
+    case 'reward':
+        require_once 'app/controllers/client/RewardController.php';
+        $obj = new RewardController();
+        break;
+
+    case 'user':
+        require_once 'app/controllers/admin/AdminUserController.php';
+        $obj = new UserController();
+        break;
+
+    case 'warehouse':
+        require_once 'app/controllers/warehouse/WarehouseController.php';
+        $obj = new WarehouseController();
+        break;
+
+    case 'auth':
+        require_once 'app/controllers/client/AuthController.php';
+        $obj = new AuthController();
+        break;
+
+    case 'report':
+        require_once 'app/controllers/admin/AdminReportController.php';
+        $obj = new AdminReportController();
         break;
 
     default:

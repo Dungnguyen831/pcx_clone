@@ -1,0 +1,112 @@
+
+    /* CSS Tùy chỉnh - Không làm ảnh hưởng đến Header */
+    .profile-wrapper {
+        padding: 50px 0;
+        background-color: #f8fafc;
+        min-height: calc(100vh - 200px); /* Giữ footer luôn ở dưới */
+    }
+
+    .profile-card {
+        max-width: 450px;
+        margin: 0 auto;
+        background: #fff;
+        border-radius: 15px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        padding: 40px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .profile-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .profile-icon-circle {
+        width: 80px;
+        height: 80px;
+        background: #eef2ff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 15px;
+        color: #2563eb;
+    }
+
+    /* Info Box style giống image_0a1b0e.png nhưng không bôi đậm */
+    .info-group {
+        background: #f1f5f9;
+        padding: 15px 20px;
+        border-radius: 12px;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+    }
+
+    .info-group i {
+        margin-right: 15px;
+        color: #2563eb;
+        width: 20px;
+        text-align: center;
+    }
+
+    .info-label {
+        display: block;
+        font-size: 11px;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .info-value {
+        display: block;
+        font-size: 15px;
+        color: #1e293b;
+        font-weight: normal; /* Không bôi đậm */
+    }
+
+    /* Button & Link */
+    .btn-edit-toggle {
+        width: 100%;
+        padding: 13px;
+        background: #2563eb;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        margin-top: 10px;
+        transition: 0.3s;
+    }
+
+    .btn-edit-toggle:hover {
+        background: #1d4ed8;
+    }
+
+    .form-control-custom {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        margin-top: 5px;
+        outline: none;
+    }
+
+    .profile-footer-links {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #f1f5f9;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .profile-footer-links a {
+        text-decoration: none !important; /* Bỏ gạch chân */
+        font-size: 14px;
+        font-weight: normal !important; /* Bỏ bôi đậm */
+    }
+
+    .link-password { color: #2563eb; }
+    .link-logout { color: #ef4444; }
+
+    /* Ẩn/Hiện Section */
+    .hidden { display: none; }
